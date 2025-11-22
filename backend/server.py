@@ -7,6 +7,7 @@ import os
 import re
 import argparse
 from typing import List, Set
+from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -33,7 +34,7 @@ def scan_repository(root_path: str):
     logger.info(f"Scanning: {root_path}")
     
     for root, dirs, files in os.walk(root_path):
-        dirs[:] = [d for d in dirs if d not in ["node_modules", ".git", "venv", "__pycache__", "build", "dist", ".idea"]]
+        dirs[:] = [d for d in dirs if d not in ["node_modules", ".git", "venv", "__pycache__", "build", "dist", ".idea", "target"]]
         for file in files:
             if file.endswith(('.ts', '.tsx', '.js', '.jsx', '.py', '.java', '.kt', '.go', '.rs', '.cpp')):
                 rel_path = os.path.relpath(os.path.join(root, file), root_path).replace("\\", "/")
@@ -52,7 +53,6 @@ def scan_repository(root_path: str):
                 })
                 file_map[file] = rel_path
 
-    # Regex for imports
     import_pattern = re.compile(r'(?:import|from|include)\s+["\']?([@\w\.\/-]+)["\']?')
     for node in nodes:
         try:
@@ -91,16 +91,20 @@ class GraphState:
 state = GraphState()
 
 # --- 3. WEB SERVER ---
-app = FastAPI()
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
-@app.on_event("startup")
-async def startup_event():
+# Modern Lifespan Manager (Fixes the DeprecationWarning)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Capture the event loop
     state.loop = asyncio.get_running_loop()
+    yield
+    # Shutdown: Clean up if needed
+
+app = FastAPI(lifespan=lifespan)
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 @app.get("/")
 async def get():
-    # Serve index.html from same folder
     try:
         with open(os.path.join(os.path.dirname(__file__), "index.html"), "r") as f:
             return HTMLResponse(content=f.read())
@@ -159,15 +163,28 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent | ImageConte
     
     raise ValueError(f"Tool {name} not found")
 
-# --- 5. RUNNER ---
+# --- 5. RUNNER (FIXED ASYNCIO LOGIC) ---
+async def run_mcp_server():
+    # Correct way to run MCP stdio server
+    async with stdio_server() as (read_stream, write_stream):
+        await mcp.run(read_stream, write_stream, mcp.create_initialization_options())
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("path", help="Absolute path to the repo to analyze")
     args = parser.parse_args()
 
+    # 1. Build Graph
     state.nodes, state.edges = scan_repository(args.path)
 
+    # 2. Start Web Server (Background Thread)
+    # We run Uvicorn in a separate thread so it doesn't block the MCP loop
     t = threading.Thread(target=lambda: uvicorn.run(app, host="0.0.0.0", port=8000, log_config=None, access_log=False), daemon=True)
     t.start()
     
-    asyncio.run(asyncio.run(stdio_server())(mcp.run))
+    # 3. Start MCP (Main Thread - Blocking)
+    # This listens to stdin/stdout for JetBrains
+    try:
+        asyncio.run(run_mcp_server())
+    except KeyboardInterrupt:
+        pass
