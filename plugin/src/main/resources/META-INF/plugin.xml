@@ -1,0 +1,16 @@
+<idea-plugin>
+    <id>com.brainsgraph.plugin</id>
+    <name>BrainsGraph</name>
+    <vendor>HackathonTeam</vendor>
+    <description>Visual Knowledge Graph for JetBrains AI</description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="BrainsGraph" 
+                    secondary="true" 
+                    icon="AllIcons.General.Web"
+                    anchor="right"
+                    factoryClass="com.brainsgraph.GraphToolWindowFactory"/>
+    </extensions>
+</idea-plugin>

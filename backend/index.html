@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>BrainsGraph Viewer</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow: hidden; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #1e1f22; color: #e2e8f0; }
+
+        /* --- STATUS BAR --- */
+        #status-bar {
+            position: fixed; top: 20px; left: 20px;
+            background: rgba(30, 41, 59, 0.95); padding: 10px 20px;
+            border-radius: 8px; border: 1px solid #4e5155;
+            font-size: 12px; font-weight: bold; color: #94a3b8;
+            z-index: 1000; display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
+        .status-dot.connected { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+        #stats { margin-left: 10px; font-weight: normal; opacity: 0.8; border-left: 1px solid #666; padding-left: 10px; }
+
+        /* --- GRAPH --- */
+        #graph { position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
+
+        /* Node Styling */
+        .node { cursor: pointer; stroke: #1e1f22; stroke-width: 1.5px; transition: all 0.3s; }
+        
+        /* Node Colors by Type */
+        .node.core { fill: #ec4899; }      
+        .node.service { fill: #eab308; }   
+        .node.component { fill: #64748b; } 
+        .node.config { fill: #a855f7; }    
+        .node.utility { fill: #14b8a6; }   
+        .node.default { fill: #9ca3af; }
+
+        .node:hover { stroke: #fff; stroke-width: 2px; }
+
+        /* Highlighted State (AI Triggered) */
+        .node.highlighted {
+            stroke: #fff !important;
+            stroke-width: 3px !important;
+            filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.8)); /* Blue Glow */
+            animation: pulseNode 2s infinite;
+        }
+        
+        @keyframes pulseNode {
+            0% { r: 20; } 50% { r: 24; } 100% { r: 20; }
+        }
+
+        /* Links */
+        .link { fill: none; stroke: #4e5155; stroke-width: 1.5px; opacity: 0.4; }
+        .link.highlighted { stroke: #3b82f6 !important; stroke-width: 2.5px !important; opacity: 1; }
+
+        /* Tooltip */
+        .tooltip {
+            position: fixed; background: rgba(15, 23, 42, 0.95);
+            border: 1px solid #475569; border-radius: 8px;
+            padding: 12px; pointer-events: none; z-index: 2000;
+            color: white; font-size: 13px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            max-width: 300px;
+        }
+        .tooltip-title { font-weight: bold; border-bottom: 1px solid #475569; padding-bottom: 4px; margin-bottom: 4px; color: #e2e8f0; }
+        .tooltip-path { font-family: monospace; font-size: 11px; color: #94a3b8; }
+        
+        /* Controls */
+        #controls { position: fixed; bottom: 20px; right: 20px; display: flex; gap: 10px; }
+        button { 
+            padding: 8px 16px; background: #334155; border: 1px solid #475569; 
+            border-radius: 4px; color: #e2e8f0; cursor: pointer; transition: background 0.2s; 
+        }
+        button:hover { background: #475569; }
+    </style>
+</head>
+<body>
+
+    <div id="status-bar">
+        <div id="ws-dot" class="status-dot"></div>
+        <span id="ws-text">Connecting to BrainsGraph...</span>
+        <span id="stats"></span>
+    </div>
+
+    <div id="controls">
+        <button onclick="resetZoom()">Reset Zoom</button>
+        <button onclick="togglePhysics()">Pause Physics</button>
+    </div>
+
+    <svg id="graph"></svg>
+
+    <script>
+        const WS_URL = 'ws://localhost:8000/ws';
+        
+        let simulation, svg, g, zoom;
+        let nodes = [], links = [];
+        let highlightedIds = new Set();
+        let physicsEnabled = true;
+
+        // --- 1. CONNECTION LOGIC ---
+        function connect() {
+            const ws = new WebSocket(WS_URL);
+            const dot = document.getElementById('ws-dot');
+            const text = document.getElementById('ws-text');
+
+            ws.onopen = () => {
+                dot.classList.add('connected');
+                text.innerText = "Connected to Repository";
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'INIT') {
+                    renderGraph(data);
+                } 
+                else if (data.type === 'UPDATE') {
+                    highlightedIds = new Set(data.highlighted);
+                    updateHighlights();
+                }
+            };
+
+            ws.onclose = () => {
+                dot.classList.remove('connected');
+                text.innerText = "Disconnected (Check server.py)";
+                setTimeout(connect, 2000);
+            };
+        }
+
+        // --- 2. D3 RENDER LOGIC ---
+        function initGraph() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            svg = d3.select("#graph")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("viewBox", [0, 0, width, height]);
+
+            g = svg.append("g");
+
+            zoom = d3.zoom()
+                .scaleExtent([0.1, 4])
+                .on("zoom", (event) => g.attr("transform", event.transform));
+            
+            svg.call(zoom);
+
+            // Arrow markers
+            svg.append("defs").append("marker")
+                .attr("id", "arrow-default")
+                .attr("viewBox", "0 -5 10 10")
+                .attr("refX", 25).attr("refY", 0)
+                .attr("markerWidth", 6).attr("markerHeight", 6)
+                .attr("orient", "auto")
+                .append("path")
+                .attr("d", "M0,-5L10,0L0,5")
+                .attr("fill", "#4e5155");
+        }
+
+        function renderGraph(data) {
+            nodes = data.nodes || [];
+            links = data.edges || [];
+            highlightedIds = new Set(data.highlighted || []);
+
+            document.getElementById('stats').innerText = `${nodes.length} Nodes | ${links.length} Links`;
+
+            // Clean up
+            g.selectAll("*").remove();
+
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            simulation = d3.forceSimulation(nodes)
+                .force("link", d3.forceLink(links).id(d => d.id).distance(150))
+                .force("charge", d3.forceManyBody().strength(-500))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .force("collide", d3.forceCollide().radius(30));
+
+            // Draw Links
+            const link = g.append("g").selectAll("path")
+                .data(links)
+                .join("path")
+                .attr("class", "link")
+                .attr("marker-end", "url(#arrow-default)");
+
+            // Draw Nodes
+            const node = g.append("g").selectAll("circle")
+                .data(nodes)
+                .join("circle")
+                .attr("class", d => `node ${d.type || 'default'}`)
+                .attr("r", 20)
+                .on("mouseover", showTooltip)
+                .on("mouseout", hideTooltip)
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
+
+            // Labels
+            const label = g.append("g").selectAll("text")
+                .data(nodes)
+                .join("text")
+                .attr("class", "label")
+                .attr("text-anchor", "middle")
+                .attr("dy", 32)
+                .style("font-size", "10px")
+                .style("fill", "#cbd5e1")
+                .style("pointer-events", "none")
+                .text(d => d.label.length > 15 ? d.label.substring(0, 12) + '...' : d.label);
+
+            simulation.on("tick", () => {
+                link.attr("d", d => `M${d.source.x},${d.source.y}L${d.target.x},${d.target.y}`);
+                node.attr("cx", d => d.x).attr("cy", d => d.y);
+                label.attr("x", d => d.x).attr("y", d => d.y);
+            });
+
+            updateHighlights();
+        }
+
+        function updateHighlights() {
+            // Efficiently toggle classes based on Set membership
+            d3.selectAll(".node")
+                .classed("highlighted", d => highlightedIds.has(d.id));
+
+            d3.selectAll(".link")
+                .classed("highlighted", d => {
+                    const sId = d.source.id || d.source;
+                    const tId = d.target.id || d.target;
+                    return highlightedIds.has(sId) && highlightedIds.has(tId);
+                });
+        }
+
+        // --- TOOLTIP ---
+        let tooltip = d3.select("body").append("div").attr("class", "tooltip").style("display", "none");
+
+        function showTooltip(event, d) {
+            tooltip.style("display", "block")
+                .html(`
+                    <div class="tooltip-title">${d.label}</div>
+                    <div class="tooltip-path">${d.id}</div>
+                    <div style="margin-top:5px; font-size:11px; color:#94a3b8">Type: ${d.type}</div>
+                `)
+                .style("left", (event.pageX + 15) + "px")
+                .style("top", (event.pageY + 15) + "px");
+        }
+        function hideTooltip() { tooltip.style("display", "none"); }
+
+        // --- INTERACTION ---
+        function dragstarted(event) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+        }
+        function dragged(event) { event.subject.fx = event.x; event.subject.fy = event.y; }
+        function dragended(event) {
+            if (!event.active) simulation.alphaTarget(0);
+            event.subject.fx = null;
+            event.subject.fy = null;
+        }
+
+        function resetZoom() {
+            svg.transition().duration(750).call(
+                zoom.transform, 
+                d3.zoomIdentity.translate(0,0).scale(1)
+            );
+        }
+
+        function togglePhysics() {
+            physicsEnabled = !physicsEnabled;
+            if(physicsEnabled) simulation.restart();
+            else simulation.stop();
+        }
+
+        // Boot
+        initGraph();
+        connect();
+        window.addEventListener('resize', () => {
+            const w = window.innerWidth, h = window.innerHeight;
+            svg.attr("width", w).attr("height", h);
+            if(simulation) simulation.force("center", d3.forceCenter(w/2, h/2)).alpha(0.3).restart();
+        });
+
+    </script>
+</body>
+</html>
