@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Mermaid Graph Viewer</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        #controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        #controls h2 {
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .file-input-wrapper {
+            margin-bottom: 15px;
+        }
+
+        input[type="file"] {
+            display: block;
+            padding: 10px;
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        input[type="file"]:hover {
+            border-color: #666;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 16px;
+            background: #666;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #555;
+        }
+
+        button:active {
+            background: #444;
+        }
+
+        #graph {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .node {
+            cursor: pointer;
+            stroke: #666;
+            stroke-width: 2px;
+            fill: #e0e0e0;
+        }
+
+        .node.enum {
+            fill: #d4d4d4;
+            stroke: #888;
+        }
+
+        .node.interface {
+            fill: #e8e8e8;
+            stroke: #666;
+            stroke-dasharray: 4,2;
+        }
+
+        .node.abstract {
+            fill: #dadada;
+            stroke: #777;
+            stroke-dasharray: 6,3;
+        }
+
+        .node:hover {
+            fill: #c5c5c5;
+            stroke: #333;
+            stroke-width: 3px;
+        }
+
+        .tooltip {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.98);
+            border: 2px solid #666;
+            border-radius: 8px;
+            padding: 15px;
+            pointer-events: none;
+            z-index: 2000;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .tooltip-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .tooltip-stereotype {
+            font-size: 11px;
+            color: #666;
+            font-style: italic;
+            margin-bottom: 5px;
+        }
+
+        .tooltip-section {
+            margin-top: 10px;
+        }
+
+        .tooltip-section-title {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tooltip-member {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            color: #444;
+            padding: 2px 0;
+            padding-left: 10px;
+        }
+
+        .tooltip-member.private {
+            color: #c53030;
+        }
+
+        .tooltip-member.public {
+            color: #2d7a3e;
+        }
+
+        .tooltip-member.protected {
+            color: #b7791f;
+        }
+
+        .link {
+            fill: none;
+            stroke: #999;
+            stroke-width: 2px;
+        }
+
+        .link.contains { 
+            stroke: #666; 
+            stroke-width: 2.5px; 
+        }
+
+        .link.uses { 
+            stroke: #aaa; 
+            stroke-dasharray: 5,5; 
+        }
+
+        .link.references { 
+            stroke: #888; 
+            stroke-dasharray: 8,4; 
+        }
+
+        .link.inherits { 
+            stroke: #666; 
+            stroke-width: 3px; 
+        }
+
+        .label {
+            font-size: 10px;
+            font-weight: 500;
+            pointer-events: none;
+            text-anchor: middle;
+            fill: #333;
+            user-select: none;
+        }
+
+        .link-label {
+            font-size: 9px;
+            fill: #666;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .link-label-bg {
+            fill: rgba(245, 245, 245, 0.9);
+            stroke: #ddd;
+            stroke-width: 0.5px;
+        }
+
+        #info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            font-size: 13px;
+            color: #666;
+        }
+
+        #legend {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            font-size: 12px;
+            max-width: 320px;
+        }
+
+        #legend h3 {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            color: #333;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 8px;
+        }
+
+        .legend-section {
+            margin-bottom: 15px;
+        }
+
+        .legend-section-title {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            gap: 10px;
+        }
+
+        .legend-line {
+            width: 40px;
+            height: 2px;
+            flex-shrink: 0;
+        }
+
+        .legend-line.contains {
+            background: #666;
+            height: 2.5px;
+        }
+
+        .legend-line.uses {
+            background: #aaa;
+            background-image: linear-gradient(to right, #aaa 50%, transparent 50%);
+            background-size: 10px 2px;
+        }
+
+        .legend-line.references {
+            background: #888;
+            background-image: linear-gradient(to right, #888 66%, transparent 66%);
+            background-size: 12px 2px;
+        }
+
+        .legend-line.inherits {
+            background: #666;
+            height: 3px;
+        }
+
+        .legend-line.default {
+            background: #999;
+        }
+
+        .legend-text {
+            flex-grow: 1;
+            color: #444;
+        }
+
+        .legend-syntax {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 10px;
+            color: #666;
+            background: #f5f5f5;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
+        .legend-node {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            gap: 8px;
+        }
+
+        .legend-circle {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid #666;
+            flex-shrink: 0;
+        }
+
+        .legend-circle.enum {
+            background: #d4d4d4;
+            border-color: #888;
+        }
+
+        .legend-circle.class {
+            background: #e0e0e0;
+            border-color: #666;
+        }
+
+        .legend-circle.interface {
+            background: #e8e8e8;
+            border: 2px dashed #666;
+        }
+
+        .legend-circle.abstract {
+            background: #dadada;
+            border: 2px dashed #777;
+        }
+
+        .error {
+            color: #d32f2f;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <h2>Mermaid Graph Viewer</h2>
+        <div class="file-input-wrapper">
+            <input type="file" id="fileInput" accept=".mmd,.mermaid,.md" />
+        </div>
+        <div class="button-group">
+            <button onclick="resetSimulation()">Reset Layout</button>
+            <button onclick="centerGraph()">Center</button>
+            <button onclick="changeLayout()">Change Direction</button>
+            <button onclick="toggleControls()">Hide Controls</button>
+        </div>
+        <div style="margin-top: 10px; font-size: 11px; color: #666;">
+            Layout: <span id="layoutMode">Left to Right</span>
+        </div>
+        <div id="error"></div>
+    </div>
+
+    <div id="info">
+        <div>Drop a .mmd file or use the file picker above</div>
+        <div id="stats"></div>
+    </div>
+
+    <div id="legend">
+        <h3>Legend</h3>
+
+        <div class="legend-section">
+            <div class="legend-section-title">Relationships</div>
+
+            <div class="legend-item">
+                <div class="legend-line inherits"></div>
+                <div class="legend-text">
+                    <strong>Inheritance</strong>
+                    <div class="legend-syntax">&lt;|-- or --|&gt;</div>
+                    <div style="font-size: 10px; color: #888;">Child extends parent class</div>
+                </div>
+            </div>
+
+            <div class="legend-item">
+                <div class="legend-line contains"></div>
+                <div class="legend-text">
+                    <strong>Composition</strong>
+                    <div class="legend-syntax">*-- or --*</div>
+                    <div style="font-size: 10px; color: #888;">Strong ownership, part of lifecycle</div>
+                </div>
+            </div>
+
+            <div class="legend-item">
+                <div class="legend-line references"></div>
+                <div class="legend-text">
+                    <strong>Aggregation</strong>
+                    <div class="legend-syntax">o-- or --o</div>
+                    <div style="font-size: 10px; color: #888;">Has reference, independent lifecycle</div>
+                </div>
+            </div>
+
+            <div class="legend-item">
+                <div class="legend-line uses"></div>
+                <div class="legend-text">
+                    <strong>Dependency</strong>
+                    <div class="legend-syntax">..&gt; or &lt;..</div>
+                    <div style="font-size: 10px; color: #888;">Uses or depends on temporarily</div>
+                </div>
+            </div>
+
+            <div class="legend-item">
+                <div class="legend-line default"></div>
+                <div class="legend-text">
+                    <strong>Association</strong>
+                    <div class="legend-syntax">--&gt; or ---</div>
+                    <div style="font-size: 10px; color: #888;">General connection or flow</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend-section">
+            <div class="legend-section-title">Node Types</div>
+
+            <div class="legend-node">
+                <div class="legend-circle enum"></div>
+                <div class="legend-text">Enumeration</div>
+            </div>
+
+            <div class="legend-node">
+                <div class="legend-circle interface"></div>
+                <div class="legend-text">Interface</div>
+            </div>
+
+            <div class="legend-node">
+                <div class="legend-circle abstract"></div>
+                <div class="legend-text">Abstract Class</div>
+            </div>
+
+            <div class="legend-node">
+                <div class="legend-circle class"></div>
+                <div class="legend-text">Class</div>
+            </div>
+        </div>
+    </div>
+
+    <svg id="graph"></svg>
+
+    <script>
+        // Mermaid Parser
+        class MermaidParser {
+            constructor(content) {
+                this.content = content;
+                this.nodes = new Map();
+                this.links = [];
+                this.graphType = null;
+            }
+
+            parse() {
+                const lines = this.content.split('\n').map(line => line.trim());
+                
+                // Detect graph type
+                for (const line of lines) {
+                    if (line.match(/^(graph|flowchart|classDiagram|stateDiagram)/)) {
+                        this.graphType = line.split(/\s+/)[0];
+                        break;
+                    }
+                }
+
+                if (this.graphType === 'classDiagram') {
+                    this.parseClassDiagram(lines);
+                } else if (this.graphType === 'graph' || this.graphType === 'flowchart') {
+                    this.parseFlowchart(lines);
+                } else if (this.graphType === 'stateDiagram') {
+                    this.parseStateDiagram(lines);
+                } else {
+                    // Try to parse as generic graph
+                    this.parseGeneric(lines);
+                }
+
+                return {
+                    nodes: Array.from(this.nodes.values()),
+                    links: this.links,
+                    graphType: this.graphType
+                };
+            }
+
+            addNode(id, label = null, type = 'default', details = {}) {
+                if (!this.nodes.has(id)) {
+                    this.nodes.set(id, {
+                        id: id,
+                        label: label || id,
+                        type: type,
+                        stereotype: details.stereotype || null,
+                        attributes: details.attributes || [],
+                        methods: details.methods || [],
+                        members: details.members || []
+                    });
+                } else {
+                    // Update existing node with new details
+                    const node = this.nodes.get(id);
+                    if (details.stereotype) node.stereotype = details.stereotype;
+                    if (details.attributes) node.attributes = details.attributes;
+                    if (details.methods) node.methods = details.methods;
+                    if (details.members) node.members = details.members;
+                    if (type !== 'default') node.type = type;
+                }
+            }
+
+            addLink(source, target, type = 'default', label = '') {
+                this.addNode(source);
+                this.addNode(target);
+                this.links.push({
+                    source: source,
+                    target: target,
+                    type: type,
+                    label: label
+                });
+            }
+
+            parseClassDiagram(lines) {
+                let currentClass = null;
+                let currentDetails = {
+                    stereotype: null,
+                    attributes: [],
+                    methods: [],
+                    members: []
+                };
+                let insideClass = false;
+
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i];
+
+                    // Skip comments and empty lines
+                    if (line.startsWith('%%') || !line || line.startsWith('classDiagram')) continue;
+
+                    // Class definition: class ClassName { }
+                    const classMatch = line.match(/^class\s+(\w+)\s*(?:\{|$)/);
+                    if (classMatch) {
+                        // Save previous class if exists
+                        if (currentClass) {
+                            this.addNode(currentClass, currentClass, this.determineClassType(currentDetails), currentDetails);
+                        }
+
+                        // Start new class
+                        currentClass = classMatch[1];
+                        currentDetails = {
+                            stereotype: null,
+                            attributes: [],
+                            methods: [],
+                            members: []
+                        };
+                        insideClass = line.includes('{');
+                        continue;
+                    }
+
+                    // End of class definition
+                    if (line === '}') {
+                        if (currentClass) {
+                            this.addNode(currentClass, currentClass, this.determineClassType(currentDetails), currentDetails);
+                            currentClass = null;
+                        }
+                        insideClass = false;
+                        continue;
+                    }
+
+                    // Parse class body content
+                    if (insideClass || currentClass) {
+                        // Stereotype: <<enumeration>>, <<interface>>, <<abstract>>
+                        const stereoMatch = line.match(/^<<(.+?)>>/);
+                        if (stereoMatch) {
+                            currentDetails.stereotype = stereoMatch[1];
+                            continue;
+                        }
+
+                        // Member with visibility: +field or -field or #field or +method()
+                        const memberMatch = line.match(/^([+\-#~])\s*(.+)$/);
+                        if (memberMatch) {
+                            const visibility = this.parseVisibility(memberMatch[1]);
+                            const memberDef = memberMatch[2].trim();
+
+                            // Check if it's a method (has parentheses)
+                            if (memberDef.includes('(')) {
+                                currentDetails.methods.push({
+                                    visibility: visibility,
+                                    definition: memberDef
+                                });
+                            } else {
+                                // It's an attribute/field
+                                currentDetails.attributes.push({
+                                    visibility: visibility,
+                                    definition: memberDef
+                                });
+                            }
+                            continue;
+                        }
+
+                        // Plain member (no visibility modifier) - for enums or simple lists
+                        if (line && !line.match(/[<\-\-\|>]+/) && currentClass) {
+                            currentDetails.members.push(line);
+                            continue;
+                        }
+                    }
+
+                    // Relationships
+                    // Inheritance: A <|-- B or A --|> B
+                    if (line.match(/[<\-\-\|>]+/)) {
+                        // Save current class before processing relationship
+                        if (currentClass) {
+                            this.addNode(currentClass, currentClass, this.determineClassType(currentDetails), currentDetails);
+                            currentClass = null;
+                            insideClass = false;
+                        }
+                        const parts = line.split(/\s+/);
+                        let source = parts[0];
+                        let target = null;
+                        let relType = 'default';
+                        let label = '';
+
+                        // Find relationship operator and target
+                        for (let i = 1; i < parts.length; i++) {
+                            if (parts[i].match(/[<\-\-\|>]+/)) {
+                                const rel = parts[i];
+                                target = parts[i + 1];
+                                
+                                // Determine relationship type
+                                if (rel.includes('*--') || rel.includes('--*')) {
+                                    relType = 'contains';
+                                } else if (rel.includes('..>') || rel.includes('<..')) {
+                                    relType = 'uses';
+                                } else if (rel.includes('o--') || rel.includes('--o')) {
+                                    relType = 'references';
+                                } else if (rel.includes('<|--') || rel.includes('--|>')) {
+                                    relType = 'inherits';
+                                }
+
+                                // Extract label if exists
+                                if (parts[i + 2] && parts[i + 2] === ':') {
+                                    label = parts.slice(i + 3).join(' ');
+                                }
+                                break;
+                            }
+                        }
+
+                        if (target) {
+                            // Clean up target (remove trailing colon)
+                            target = target.replace(/:$/, '');
+                            
+                            // Extract label from line if format is "A --> B : label"
+                            const labelMatch = line.match(/:\s*(.+)$/);
+                            if (labelMatch) {
+                                label = labelMatch[1].trim();
+                            }
+
+                            this.addLink(source, target, relType, label);
+                        }
+                    }
+                }
+
+                // Don't forget to add the last class if still open
+                if (currentClass) {
+                    this.addNode(currentClass, currentClass, this.determineClassType(currentDetails), currentDetails);
+                }
+            }
+
+            parseVisibility(symbol) {
+                switch(symbol) {
+                    case '+': return 'public';
+                    case '-': return 'private';
+                    case '#': return 'protected';
+                    case '~': return 'package';
+                    default: return 'public';
+                }
+            }
+
+            determineClassType(details) {
+                if (details.stereotype) {
+                    const stereo = details.stereotype.toLowerCase();
+                    if (stereo.includes('enum')) return 'enum';
+                    if (stereo.includes('interface')) return 'interface';
+                    if (stereo.includes('abstract')) return 'abstract';
+                }
+                return 'class';
+            }
+
+            parseFlowchart(lines) {
+                for (const line of lines) {
+                    if (line.startsWith('%%') || !line || line.match(/^(graph|flowchart)/)) continue;
+
+                    // Node definition: A[Label] or A(Label) or A{Label}
+                    const nodeDefMatch = line.match(/^(\w+)([\[\(\{])(.*?)([\]\)\}])/);
+                    if (nodeDefMatch) {
+                        this.addNode(nodeDefMatch[1], nodeDefMatch[3] || nodeDefMatch[1], 'node');
+                    }
+
+                    // Relationship: A --> B or A --- B
+                    const relMatch = line.match(/(\w+)\s*(-->|---|\-\.\->|==>)\s*(\w+)/);
+                    if (relMatch) {
+                        const [, source, arrow, target] = relMatch;
+                        let relType = 'default';
+                        
+                        if (arrow === '-.->') relType = 'uses';
+                        else if (arrow === '==>') relType = 'contains';
+
+                        const labelMatch = line.match(/\|([^|]+)\|/);
+                        const label = labelMatch ? labelMatch[1] : '';
+
+                        this.addLink(source, target, relType, label);
+                    }
+                }
+            }
+
+            parseStateDiagram(lines) {
+                for (const line of lines) {
+                    if (line.startsWith('%%') || !line || line.match(/^stateDiagram/)) continue;
+
+                    // State transition: State1 --> State2
+                    const transMatch = line.match(/(\w+)\s*-->\s*(\w+)(?:\s*:\s*(.+))?/);
+                    if (transMatch) {
+                        this.addLink(transMatch[1], transMatch[2], 'default', transMatch[3] || '');
+                    }
+                }
+            }
+
+            parseGeneric(lines) {
+                // Fallback parser for any graph structure
+                for (const line of lines) {
+                    if (line.startsWith('%%') || !line) continue;
+
+                    // Try to find any node references and relationships
+                    const words = line.split(/\s+/);
+                    for (let i = 0; i < words.length; i++) {
+                        const word = words[i];
+                        // If word looks like a relationship operator
+                        if (word.match(/^[<\-\.=\|>]+$/)) {
+                            if (i > 0 && i < words.length - 1) {
+                                this.addLink(words[i-1], words[i+1], 'default', '');
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // D3.js Visualization
+        let simulation, svg, g, zoom;
+        let nodes = [], links = [];
+        let currentLayout = 'LR'; // LR = Left to Right, TB = Top to Bottom, RL = Right to Left, BT = Bottom to Top
+
+        function initGraph() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            svg = d3.select("#graph")
+                .attr("width", width)
+                .attr("height", height)
+                .attr("viewBox", [0, 0, width, height]);
+
+            g = svg.append("g");
+
+            zoom = d3.zoom()
+                .scaleExtent([0.1, 4])
+                .on("zoom", (event) => {
+                    g.attr("transform", event.transform);
+                });
+            
+            svg.call(zoom);
+
+            // Arrow markers
+            svg.append("defs").selectAll("marker")
+                .data(["default", "contains", "uses", "references", "inherits"])
+                .join("marker")
+                .attr("id", d => `arrow-${d}`)
+                .attr("viewBox", "0 -5 10 10")
+                .attr("refX", 25)
+                .attr("refY", 0)
+                .attr("markerWidth", 6)
+                .attr("markerHeight", 6)
+                .attr("orient", "auto")
+                .append("path")
+                .attr("d", "M0,-5L10,0L0,5")
+                .attr("fill", d => {
+                    if (d === "contains") return "#666";
+                    if (d === "uses") return "#aaa";
+                    if (d === "references") return "#888";
+                    if (d === "inherits") return "#666";
+                    return "#999";
+                });
+        }
+
+        function renderGraph(data) {
+            nodes = data.nodes;
+            links = data.links;
+
+            // Clear previous graph
+            g.selectAll("*").remove();
+
+            if (nodes.length === 0) {
+                showError("No nodes found in the graph");
+                return;
+            }
+
+            // Update stats
+            document.getElementById('stats').innerHTML = 
+                `Nodes: ${nodes.length} | Edges: ${links.length} | Type: ${data.graphType || 'generic'}`;
+
+            // Create simulation
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            // Calculate node hierarchy (identify root/important nodes)
+            const inDegree = new Map();
+            const outDegree = new Map();
+
+            nodes.forEach(node => {
+                inDegree.set(node.id, 0);
+                outDegree.set(node.id, 0);
+            });
+
+            links.forEach(link => {
+                const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                outDegree.set(sourceId, (outDegree.get(sourceId) || 0) + 1);
+                inDegree.set(targetId, (inDegree.get(targetId) || 0) + 1);
+            });
+
+            // Identify root nodes (high out-degree, low in-degree)
+            nodes.forEach(node => {
+                const out = outDegree.get(node.id) || 0;
+                const inn = inDegree.get(node.id) || 0;
+                node.importance = out - inn;
+            });
+
+            simulation = d3.forceSimulation(nodes)
+                .force("link", d3.forceLink(links).id(d => d.id).distance(150))
+                .force("charge", d3.forceManyBody().strength(-600))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .force("collision", d3.forceCollide().radius(60));
+
+            // Apply directional layout forces
+            applyLayoutForces(simulation, width, height);
+
+            // Create links
+            const link = g.append("g")
+                .selectAll("path")
+                .data(links)
+                .join("path")
+                .attr("class", d => `link ${d.type}`)
+                .attr("marker-end", d => `url(#arrow-${d.type})`);
+
+            // Create link labels
+            const linkLabel = g.append("g")
+                .selectAll("text")
+                .data(links.filter(d => d.label))
+                .join("text")
+                .attr("class", "link-label")
+                .text(d => d.label);
+
+            // Create nodes
+            const node = g.append("g")
+                .selectAll("circle")
+                .data(nodes)
+                .join("circle")
+                .attr("class", d => `node ${d.type}`)
+                .attr("r", 20)
+                .on("mouseenter", showTooltip)
+                .on("mousemove", moveTooltip)
+                .on("mouseleave", hideTooltip)
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
+
+            // Create labels with truncation
+            const label = g.append("g")
+                .selectAll("text")
+                .data(nodes)
+                .join("text")
+                .attr("class", "label")
+                .text(d => {
+                    // Truncate long labels to fit in node
+                    const maxLength = 10;
+                    return d.label.length > maxLength ? d.label.substring(0, maxLength) + '...' : d.label;
+                });
+
+            // Update positions on tick
+            simulation.on("tick", () => {
+                link.attr("d", d => {
+                    // Straight lines instead of curved arcs
+                    return `M${d.source.x},${d.source.y}L${d.target.x},${d.target.y}`;
+                });
+
+                linkLabel
+                    .attr("x", d => {
+                        // Position label offset from the middle of the edge
+                        const midX = (d.source.x + d.target.x) / 2;
+                        const dx = d.target.x - d.source.x;
+                        const dy = d.target.y - d.source.y;
+                        const length = Math.sqrt(dx * dx + dy * dy);
+                        // Perpendicular offset
+                        const offsetX = -dy / length * 15;
+                        return midX + offsetX;
+                    })
+                    .attr("y", d => {
+                        const midY = (d.source.y + d.target.y) / 2;
+                        const dx = d.target.x - d.source.x;
+                        const dy = d.target.y - d.source.y;
+                        const length = Math.sqrt(dx * dx + dy * dy);
+                        // Perpendicular offset
+                        const offsetY = dx / length * 15;
+                        return midY + offsetY;
+                    });
+
+                node
+                    .attr("cx", d => d.x)
+                    .attr("cy", d => d.y);
+
+                label
+                    .attr("x", d => d.x)
+                    .attr("y", d => d.y + 5);
+            });
+
+            clearError();
+        }
+
+        // Tooltip functions
+        let tooltip = null;
+
+        function createTooltip() {
+            if (!tooltip) {
+                tooltip = d3.select("body")
+                    .append("div")
+                    .attr("class", "tooltip")
+                    .style("display", "none");
+            }
+            return tooltip;
+        }
+
+        function showTooltip(event, d) {
+            const tooltip = createTooltip();
+
+            let html = `<div class="tooltip-title">${d.label}</div>`;
+
+            // Add stereotype if exists
+            if (d.stereotype) {
+                html += `<div class="tooltip-stereotype">&lt;&lt;${d.stereotype}&gt;&gt;</div>`;
+            }
+
+            // Add attributes
+            if (d.attributes && d.attributes.length > 0) {
+                html += `<div class="tooltip-section">`;
+                html += `<div class="tooltip-section-title">Attributes</div>`;
+                d.attributes.forEach(attr => {
+                    html += `<div class="tooltip-member ${attr.visibility}">${attr.visibility === 'public' ? '+' : attr.visibility === 'private' ? '-' : '#'} ${attr.definition}</div>`;
+                });
+                html += `</div>`;
+            }
+
+            // Add methods
+            if (d.methods && d.methods.length > 0) {
+                html += `<div class="tooltip-section">`;
+                html += `<div class="tooltip-section-title">Methods</div>`;
+                d.methods.forEach(method => {
+                    html += `<div class="tooltip-member ${method.visibility}">${method.visibility === 'public' ? '+' : method.visibility === 'private' ? '-' : '#'} ${method.definition}</div>`;
+                });
+                html += `</div>`;
+            }
+
+            // Add plain members (for enums)
+            if (d.members && d.members.length > 0) {
+                html += `<div class="tooltip-section">`;
+                html += `<div class="tooltip-section-title">Values</div>`;
+                d.members.forEach(member => {
+                    html += `<div class="tooltip-member">${member}</div>`;
+                });
+                html += `</div>`;
+            }
+
+            // If no detailed info, show type
+            if (!d.stereotype && (!d.attributes || d.attributes.length === 0) &&
+                (!d.methods || d.methods.length === 0) && (!d.members || d.members.length === 0)) {
+                html += `<div class="tooltip-section"><div style="color: #888; font-style: italic;">Type: ${d.type}</div></div>`;
+            }
+
+            tooltip.html(html)
+                .style("display", "block")
+                .style("left", (event.pageX + 15) + "px")
+                .style("top", (event.pageY + 15) + "px");
+        }
+
+        function moveTooltip(event) {
+            if (tooltip) {
+                tooltip
+                    .style("left", (event.pageX + 15) + "px")
+                    .style("top", (event.pageY + 15) + "px");
+            }
+        }
+
+        function hideTooltip() {
+            if (tooltip) {
+                tooltip.style("display", "none");
+            }
+        }
+
+        function dragstarted(event) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+        }
+
+        function dragged(event) {
+            event.subject.fx = event.x;
+            event.subject.fy = event.y;
+        }
+
+        function dragended(event) {
+            if (!event.active) simulation.alphaTarget(0);
+            event.subject.fx = null;
+            event.subject.fy = null;
+        }
+
+        function resetSimulation() {
+            if (!simulation) return;
+            nodes.forEach(node => {
+                node.fx = null;
+                node.fy = null;
+            });
+            simulation.alpha(1).restart();
+        }
+
+        function centerGraph() {
+            if (!svg || !zoom) return;
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            svg.transition().duration(750).call(
+                zoom.transform,
+                d3.zoomIdentity.translate(width / 2, height / 2).scale(1)
+            );
+        }
+
+        function applyLayoutForces(simulation, width, height) {
+            // Remove old directional forces
+            simulation.force("x", null).force("y", null);
+
+            // Apply new forces based on layout direction
+            switch(currentLayout) {
+                case 'LR': // Left to Right
+                    simulation
+                        .force("x", d3.forceX(d => {
+                            const importance = d.importance || 0;
+                            return width * 0.2 + (importance * -40);
+                        }).strength(0.4))
+                        .force("y", d3.forceY(height / 2).strength(0.1));
+                    break;
+
+                case 'RL': // Right to Left
+                    simulation
+                        .force("x", d3.forceX(d => {
+                            const importance = d.importance || 0;
+                            return width * 0.8 + (importance * 40);
+                        }).strength(0.4))
+                        .force("y", d3.forceY(height / 2).strength(0.1));
+                    break;
+
+                case 'TB': // Top to Bottom
+                    simulation
+                        .force("y", d3.forceY(d => {
+                            const importance = d.importance || 0;
+                            return height * 0.2 + (importance * -40);
+                        }).strength(0.4))
+                        .force("x", d3.forceX(width / 2).strength(0.1));
+                    break;
+
+                case 'BT': // Bottom to Top
+                    simulation
+                        .force("y", d3.forceY(d => {
+                            const importance = d.importance || 0;
+                            return height * 0.8 + (importance * 40);
+                        }).strength(0.4))
+                        .force("x", d3.forceX(width / 2).strength(0.1));
+                    break;
+            }
+
+            simulation.alpha(1).restart();
+        }
+
+        function changeLayout() {
+            if (!simulation) return;
+
+            // Cycle through layouts
+            const layouts = ['LR', 'RL', 'TB', 'BT'];
+            const currentIndex = layouts.indexOf(currentLayout);
+            currentLayout = layouts[(currentIndex + 1) % layouts.length];
+
+            // Update display
+            const layoutNames = {
+                'LR': 'Left to Right',
+                'RL': 'Right to Left',
+                'TB': 'Top to Bottom',
+                'BT': 'Bottom to Top'
+            };
+            document.getElementById('layoutMode').textContent = layoutNames[currentLayout];
+
+            // Apply new layout
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            applyLayoutForces(simulation, width, height);
+        }
+
+        function toggleControls() {
+            const controls = document.getElementById('controls');
+            const info = document.getElementById('info');
+            const legend = document.getElementById('legend');
+            const button = event.target;
+
+            if (controls.style.display === 'none') {
+                controls.style.display = 'block';
+                info.style.display = 'block';
+                legend.style.display = 'block';
+                button.textContent = 'Hide Controls';
+            } else {
+                controls.style.display = 'none';
+                info.style.display = 'none';
+                legend.style.display = 'none';
+                button.textContent = 'Show Controls';
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('error').innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        function clearError() {
+            document.getElementById('error').innerHTML = '';
+        }
+
+        function loadMermaidFile(content) {
+            try {
+                const parser = new MermaidParser(content);
+                const data = parser.parse();
+                renderGraph(data);
+            } catch (error) {
+                showError(`Error parsing file: ${error.message}`);
+                console.error(error);
+            }
+        }
+
+        // File input handler
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    loadMermaidFile(e.target.result);
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // Drag and drop support
+        document.body.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        document.body.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    loadMermaidFile(event.target.result);
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            if (simulation) {
+                const width = window.innerWidth;
+                const height = window.innerHeight;
+                svg.attr("width", width).attr("height", height);
+                simulation.force("center", d3.forceCenter(width / 2, height / 2));
+                simulation.alpha(0.3).restart();
+            }
+        });
+
+        // Initialize
+        initGraph();
+
+        // Auto-load wasm-module.mmd if available
+        fetch('test-graph.json')
+            .then(response => response.text())
+            .then(content => loadMermaidFile(content))
+            .catch(() => {
+                console.log('No default mermaid file found. Please load a file.');
+            });
+    </script>
+</body>
+</html>

@@ -1,0 +1,266 @@
+classDiagram
+    %% Main Application Classes
+    class CL {
+        +generateAESKey(String keyPath) Key
+        +readAESKey(String keyPath) Key
+        +calculateMAC(String message, int id, byte[] nonce, Key key) String
+        +calculateMAC(String message, byte[] nonce, Key key) String
+        +protect(byte[] message, byte[] nonce, int ID, Key symKey_c) JsonObject
+        +protect(byte[] message, byte[] nonce, Key symKey_c) JsonObject
+        +protectCTR(byte[] message, byte[] nonce, Key symKey_c) byte[]
+        +protect(byte[] message, byte[] nonce, Key symKey_c, Key symKey_f) JsonObject
+        +unprotect(JsonObject json, Key symKey) JsonObject
+        +unprotect(JsonObject json, Key symKey, byte[] nonce) JsonObject
+        +unprotectCTR(byte[] encryptedM, Key symKey, byte[] nonce) byte[]
+        +check(String message, byte[] nonce, Key key, String macToCheck) boolean
+        +check(String message, int id, byte[] nonce, Key key, String macToCheck) boolean
+        +incrementCounterInNonce(byte[] nonce, int offset) byte[]
+        +incrementByteNonce(byte[] n) byte[]
+    }
+
+    class CLI {
+        +main(String[] args) void
+        -testEncryptionMethods(Scanner scanner, CL cl) void
+    }
+
+    class GUI {
+        +main(String[] args) void
+    }
+
+    class Client {
+        -String userName
+        -int percentageBytes
+        -String choosenSong
+        -InputStream is
+        -int len
+        -byte[] nonce
+        -int id
+        -Key key_c
+        -Key key_f
+        -SSLSocket socket
+        -BufferedOutputStream os
+        -byte[] data
+        -int media_content_length
+        +startClient(String host, int port) void
+        +promptUserName() void
+        +promptSongSelection() void
+        +playMusic() void
+        -getPercentageInput() int
+        +updateMessage(String message) void
+        +updateMusicInfo(JsonObject mediaInfo) void
+        +main(String[] args) void
+    }
+
+    class Server {
+        +int NB_BYTES_PACKET_MUSIC
+        +startServer(int port) void
+        +givePartByte(byte[] originalSong, int nb) byte[]
+        +main(String[] args) void
+    }
+
+    %% Database Package
+    class Queries {
+        +String GET_USER_BY_ID_QUERY
+        +String ADD_USER_QUERY
+        +String GET_MEDIA_BY_TITLE_QUERY
+        +String ADD_MEDIA_QUERY
+        +String GET_MEDIA_CONTENT_BY_TITLE_QUERY
+        +String ADD_MEDIA_CONTENT_QUERY
+        +String GET_FAMILY_KEY_BY_ID_QUERY
+        +String GET_USER_KEY_BY_ID_QUERY
+        +String COUNT_MEDIA_BY_ID
+    }
+
+    class Populate {
+        -Populate()
+        +populate() void
+    }
+
+    class Mp3Converter {
+        +readAudioFile(String filePath) byte[]
+        +main(String[] args) void
+    }
+
+    class DatabaseUtils {
+        -DatabaseUtils()
+        -getUsers(Connection conn, String query, int parameter) List~User~
+        -extractUserFromResultSet(ResultSet resultSet) User
+        +getUserById(Connection conn, int userId) User
+        -getMedia(Connection conn, String query, String parameter) List~Media~
+        -extractMediaFromResultSet(ResultSet resultSet) Media
+        +getMediaByTitle(Connection conn, String title) Media
+        -getMediaContent(Connection conn, String query, String parameter) List~MediaContent~
+        -extractMediaContentFromResultSet(ResultSet resultSet) MediaContent
+        +getMediaContentById(Connection conn, String title) MediaContent
+        +addUser(Connection conn, User user) void
+        +addMedia(Connection conn, Media media) void
+        +addMediaContent(Connection conn, MediaContent mediaContent) void
+        +getSongInfoAsJsonById(Connection conn, String title) JsonObject
+        +checkUserMediaOwnership(Connection conn, int userId, String title) boolean
+        +getUserKeyById(Connection conn, int userId) String
+        +getFamilyKeyById(Connection conn, int userId) String
+        +getSongInfo(Connection conn, String title, int userId) JsonObject
+    }
+
+    class DataBaseConnector {
+        -Connection connection
+        -String url
+        -String username
+        -String password
+        -String DB_SETUP_FILE_NAME
+        -ClassPathResource classPathResource
+        +DataBaseConnector()
+        +createConnection() void
+        +setupTables() void
+        +getConnection() Connection
+        +closeConnection() void
+    }
+
+    class UserAccessException {
+        +UserAccessException(String message)
+    }
+
+    class DataBaseConnectionException {
+        +DataBaseConnectionException()
+        +DataBaseConnectionException(String message, Throwable cause)
+    }
+
+    %% Data Objects Package
+    class User {
+        -int userId
+        -String username
+        -String password
+        -String sharedSymmetricKey
+        -String familySymmetricKey
+        +User()
+        +User(int userId, String username, String password, String sharedSymmetricKey, String familySymmetricKey)
+        +getUserId() int
+        +getUsername() String
+        +getPassword() String
+        +getSharedSymmetricKey() String
+        +getFamilySymmetricKey() String
+        +setUserId(int userId) void
+        +setUsername(String username) void
+        +setPassword(String password) void
+        +setSharedSymmetricKey(String sharedSymmetricKey) void
+        +setFamilySymmetricKey(String familySymmetricKey) void
+    }
+
+    class Media {
+        -int mediaId
+        -String title
+        -int ownerId
+        -String format
+        -String artist
+        -String genre
+        +Media()
+        +Media(int media_id, int ownerId, String format, String artist, String title, String genre)
+        +getMediaId() int
+        +getOwnerId() int
+        +getFormat() String
+        +getArtist() String
+        +getTitle() String
+        +getGenre() String
+        +setMediaId(int mediaId) void
+        +setOwnerId(int ownerId) void
+        +setFormat(String format) void
+        +setArtist(String artist) void
+        +setTitle(String title) void
+        +setGenre(String genre) void
+        +toJson() String
+    }
+
+    class MediaInfo {
+        +toJson(Media media, MediaContent mediaContent)$ JsonObject
+    }
+
+    class MediaContent {
+        -int mediaContentId
+        -String titleContent
+        -int ownerId
+        -String lyrics
+        -String filePath
+        +MediaContent()
+        +MediaContent(int mediaContentId, int ownerId, String titleContent, String lyrics, String filePath)
+        +getMediaContentId() int
+        +getTitleContent() String
+        +getLyrics() String
+        +getFilePath() String
+        +getOwnerId() int
+        +setFilePath(String filePath) void
+        +setTitleContent(String titleContent) void
+        +setLyrics(String lyrics) void
+        +setMediaContentId(int mediaContentId) void
+        +setOwnerId(Integer ownerId) void
+        +toJson() String
+    }
+
+    class SecurityException {
+        +SecurityException(String message)
+    }
+
+    %% Base Lab Package
+    class SecureReader {
+        +main(String[] args) void
+    }
+
+    class SecureWriter {
+        +main(String[] args) void
+    }
+
+    class Base64Example {
+        +main(String[] args) void
+    }
+
+    class CryptoExample {
+        +main(String[] args) void
+        -readFile(String path) byte[]
+        +readSecretKey(String secretKeyPath) Key
+        +readPublicKey(String publicKeyPath) PublicKey
+        +readPrivateKey(String privateKeyPath) PrivateKey
+    }
+
+    class AESKeyGenerator {
+        +main(String[] args) void
+        +write(String keyPath) void
+        +read(String keyPath) Key
+    }
+
+    %% Relationships
+    CLI --> CL : uses
+    Client --> CL : uses
+    Server --> CL : uses
+    Server --> DataBaseConnector : uses
+    Server --> DatabaseUtils : uses
+    Client --> Server : connects to
+    
+    DatabaseUtils --> User : manages
+    DatabaseUtils --> Media : manages
+    DatabaseUtils --> MediaContent : manages
+    DatabaseUtils --> UserAccessException : throws
+    
+    DataBaseConnector --> DataBaseConnectionException : throws
+    
+    MediaInfo --> Media : uses
+    MediaInfo --> MediaContent : uses
+    
+    Populate --> User : creates
+    Populate --> Media : creates
+    Populate --> MediaContent : creates
+    Populate --> DataBaseConnector : uses
+    Populate --> DatabaseUtils : uses
+    Populate --> CL : uses
+    
+    DatabaseUtils --> Queries : uses
+    
+    User ..|> Serializable : implements
+    Media ..|> Serializable : implements
+    MediaContent ..|> Serializable : implements
+    MediaInfo ..|> Serializable : implements
+    
+    UserAccessException --|> Exception : extends
+    DataBaseConnectionException --|> Exception : extends
+    SecurityException --|> Exception : extends
+    
+    SecureReader --> CryptoExample : uses
+    SecureWriter --> CryptoExample : uses

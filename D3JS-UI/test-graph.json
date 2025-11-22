@@ -1,0 +1,186 @@
+{
+  "graphType": "classDiagram",
+  "nodes": [
+    {
+      "id": "User",
+      "label": "User",
+      "type": "class",
+      "attributes": [
+        {"visibility": "private", "definition": "string username"},
+        {"visibility": "private", "definition": "string email"},
+        {"visibility": "private", "definition": "string password"}
+      ],
+      "methods": [
+        {"visibility": "public", "definition": "login() bool"},
+        {"visibility": "public", "definition": "logout() void"},
+        {"visibility": "private", "definition": "validatePassword() bool"}
+      ],
+      "highlighted": true
+    },
+    {
+      "id": "Database",
+      "label": "Database",
+      "type": "class",
+      "attributes": [
+        {"visibility": "private", "definition": "Connection conn"},
+        {"visibility": "private", "definition": "string host"}
+      ],
+      "methods": [
+        {"visibility": "public", "definition": "connect() bool"},
+        {"visibility": "public", "definition": "query(sql) Result"},
+        {"visibility": "public", "definition": "close() void"}
+      ],
+      "highlighted": true
+    },
+    {
+      "id": "AuthService",
+      "label": "AuthService",
+      "type": "class",
+      "attributes": [
+        {"visibility": "private", "definition": "TokenManager tokens"}
+      ],
+      "methods": [
+        {"visibility": "public", "definition": "authenticate(user) Token"},
+        {"visibility": "public", "definition": "verify(token) bool"}
+      ],
+      "highlighted": true
+    },
+    {
+      "id": "Session",
+      "label": "Session",
+      "type": "class",
+      "attributes": [
+        {"visibility": "private", "definition": "string sessionId"},
+        {"visibility": "private", "definition": "User user"},
+        {"visibility": "private", "definition": "datetime expiry"}
+      ],
+      "methods": [
+        {"visibility": "public", "definition": "isValid() bool"},
+        {"visibility": "public", "definition": "refresh() void"}
+      ],
+      "highlighted": false
+    },
+    {
+      "id": "Logger",
+      "label": "Logger",
+      "type": "class",
+      "attributes": [
+        {"visibility": "private", "definition": "string logFile"}
+      ],
+      "methods": [
+        {"visibility": "public", "definition": "log(message) void"},
+        {"visibility": "public", "definition": "error(message) void"}
+      ],
+      "highlighted": true
+    },
+    {
+      "id": "Cache",
+      "label": "Cache",
+      "type": "class",
+      "attributes": [
+        {"visibility": "private", "definition": "Map<string, Object> data"}
+      ],
+      "methods": [
+        {"visibility": "public", "definition": "get(key) Object"},
+        {"visibility": "public", "definition": "set(key, value) void"},
+        {"visibility": "public", "definition": "clear() void"}
+      ],
+      "highlighted": false
+    },
+    {
+      "id": "Validator",
+      "label": "Validator",
+      "type": "class",
+      "methods": [
+        {"visibility": "public", "definition": "validateEmail(email) bool"},
+        {"visibility": "public", "definition": "validatePassword(pwd) bool"}
+      ],
+      "highlighted": true
+    },
+    {
+      "id": "Config",
+      "label": "Config",
+      "type": "enum",
+      "stereotype": "enumeration",
+      "members": [
+        "DB_HOST",
+        "DB_PORT",
+        "API_KEY",
+        "MAX_SESSIONS"
+      ],
+      "highlighted": false
+    }
+  ],
+  "edges": [
+    {
+      "source": "User",
+      "target": "Database",
+      "type": "uses",
+      "label": "queries",
+      "highlighted": true
+    },
+    {
+      "source": "User",
+      "target": "AuthService",
+      "type": "uses",
+      "label": "authenticates with",
+      "highlighted": false
+    },
+    {
+      "source": "User",
+      "target": "Validator",
+      "type": "uses",
+      "label": "validates data",
+      "highlighted": true
+    },
+    {
+      "source": "AuthService",
+      "target": "Database",
+      "type": "uses",
+      "label": "stores tokens",
+      "highlighted": false
+    },
+    {
+      "source": "AuthService",
+      "target": "Session",
+      "type": "contains",
+      "label": "creates",
+      "highlighted": false
+    },
+    {
+      "source": "Session",
+      "target": "User",
+      "type": "references",
+      "label": "belongs to",
+      "highlighted": false
+    },
+    {
+      "source": "Database",
+      "target": "Logger",
+      "type": "uses",
+      "label": "logs queries",
+      "highlighted": false
+    },
+    {
+      "source": "Database",
+      "target": "Cache",
+      "type": "uses",
+      "label": "caches results",
+      "highlighted": false
+    },
+    {
+      "source": "Database",
+      "target": "Config",
+      "type": "uses",
+      "label": "reads config",
+      "highlighted": false
+    },
+    {
+      "source": "AuthService",
+      "target": "Logger",
+      "type": "uses",
+      "label": "logs auth events",
+      "highlighted": false
+    }
+  ]
+}

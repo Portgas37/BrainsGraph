@@ -1,0 +1,187 @@
+classDiagram
+%% Enums
+class SectionID {
+<<enumeration>>
+SECTION_CUSTOM
+SECTION_TYPE
+SECTION_FUNCTION
+SECTION_MEMORY
+SECTION_GLOBAL
+SECTION_EXPORT
+SECTION_CODE
+}
+
+class ValType {
+<<enumeration>>
+I32
+I64
+F32
+F64
+}
+
+class BlockType {
+<<enumeration>>
+BLOCK
+LOOP
+IF
+}
+
+class MainMemFormat {
+<<enumeration>>
+I32
+UI8
+I8
+UI16
+I16
+}
+
+%% Helper Classes
+class ByteStream {
+-const uint8_t* ptr
+-const uint8_t* end
++read_byte() uint8_t
++read_uleb128() uint32_t
++read_sleb128() int32_t
++read_sleb128_64() int64_t
++read_string(len) string
++skip(bytes) void
++current() const uint8_t*
++at_end() bool
+}
+
+%% Entry Structs
+class TypeEntry {
++vector~ValType~ params
++vector~ValType~ results
++parse(ByteStream) TypeEntry$
++print(idx) void
+}
+
+class FunctionEntry {
++uint32_t type_idx
++parse(ByteStream) FunctionEntry$
++print(idx) void
+}
+
+class MemoryEntry {
++uint32_t min_pages
++uint32_t max_pages
++bool has_max
++parse(ByteStream) MemoryEntry$
++print(idx) void
+}
+
+class GlobalEntry {
++ValType type
++bool mutable_
++int64_t init_value
++parse(ByteStream) GlobalEntry$
++print(idx) void
+}
+
+class ExportEntry {
++string name
++uint8_t kind
++uint32_t index
++parse(ByteStream) ExportEntry$
++kind_to_string() const char*
++print(idx) void
+}
+
+class CodeEntry {
++vector~ValType~ locals
++vector~uint8_t~ bytecode
++parse(ByteStream) CodeEntry$
++print(idx) void
+}
+
+%% Module
+class Module {
++vector~TypeEntry~ types
++vector~FunctionEntry~ function_types
++vector~MemoryEntry~ memories
++vector~GlobalEntry~ globals
++vector~ExportEntry~ exports
++vector~CodeEntry~ functions
++print() void
+}
+
+%% Interpreter Components
+class Frame {
++vector~Value~ locals
+}
+
+class ControlFrame {
++BlockType type
++size_t start_pc
++size_t end_pc_inclusive
+}
+
+class Operation {
++uint8_t num_inputs
++UnaryOp unary
++BinaryOp binary
++TernaryOp ternary
+}
+
+%% Interpreter
+class Interpreter {
+-const Module& module
+-vector~uint8_t~ memory
+-vector~Value~ global_values
+-vector~Value~ stack
+-vector~Frame~ frames
+-JumpTable jump_table
+-static Operation i32_ops[256]
++Interpreter(Module)
++call_function(name) void
++read_memory_i32(address) int32_t
++print_stack() void
++print_memory(start, length) void
++get_stack_content() vector~Value~
++reset() void
+-execute_function(func_idx) void
+-push(val) void
+-pop() Value
+-pop_i32() int32_t
+-store_memory(addr, value, format) void
+-load_memory(addr, format) int32_t
+-branch(depth, control_frames, pc) void
+-find_export(name) const ExportEntry*
+}
+
+%% Relationships - Entry structs use ByteStream
+TypeEntry ..> ByteStream : uses
+FunctionEntry ..> ByteStream : uses
+MemoryEntry ..> ByteStream : uses
+GlobalEntry ..> ByteStream : uses
+ExportEntry ..> ByteStream : uses
+CodeEntry ..> ByteStream : uses
+
+%% Relationships - Entry structs use ValType
+TypeEntry ..> ValType : uses
+GlobalEntry ..> ValType : uses
+CodeEntry ..> ValType : uses
+
+%% Module composition
+Module *-- TypeEntry : contains
+Module *-- FunctionEntry : contains
+Module *-- MemoryEntry : contains
+Module *-- GlobalEntry : contains
+Module *-- ExportEntry : contains
+Module *-- CodeEntry : contains
+
+%% Interpreter relationships
+Interpreter o-- Module : references
+Interpreter *-- Frame : contains
+Interpreter ..> ControlFrame : uses
+Interpreter *-- Operation : contains
+Interpreter ..> ExportEntry : uses
+Interpreter ..> CodeEntry : uses
+Interpreter ..> MainMemFormat : uses
+
+%% ControlFrame uses BlockType
+ControlFrame ..> BlockType : uses
+
+%% Frame contains Values (variant type)
+Frame ..> ValType : stores as Value

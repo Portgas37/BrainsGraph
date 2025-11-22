@@ -1,0 +1,31 @@
+graph TD
+    Main[Main Program]
+    
+    Main --> UI[User Interface]
+    Main --> Database[Database Manager]
+    Main --> Logic[Business Logic]
+    Main --> Auth[Authentication]
+    
+    UI --> Display[Display Controller]
+    UI --> Input[Input Handler]
+    UI --> Theme[Theme Manager]
+    
+    Database --> Query[Query Builder]
+    Database --> Connection[Connection Pool]
+    Database --> Cache[Cache Layer]
+    
+    Logic --> Validator[Data Validator]
+    Logic --> Processor[Data Processor]
+    Logic --> Calculator[Calculator Engine]
+    
+    Auth --> Login[Login Service]
+    Auth --> Session[Session Manager]
+    Auth --> Permissions[Permission Handler]
+    
+    Display --> Renderer[Renderer]
+    Input --> Events[Event Listener]
+    
+    Query --> Connection
+    Processor --> Validator
+    Session --> Database
+    Permissions --> Database
