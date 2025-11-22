@@ -542,13 +542,63 @@
 
             let html = `<div class="tooltip-title">${d.label}${d.highlighted ? ' <span class="highlight-badge">HIGHLIGHTED</span>' : ''}</div>`;
 
+            // Show full path if different from label
+            if (d.fullPath && d.fullPath !== d.label) {
+                html += `<div style="font-size: 10px; color: #888; margin-bottom: 8px; font-family: monospace;">${d.fullPath}</div>`;
+            }
+
+            // Show type
+            html += `<div style="font-size: 11px; color: #666; margin-bottom: 8px;">Type: <strong>${d.type || 'node'}</strong></div>`;
+
             if (d.stereotype) {
                 html += `<div class="tooltip-stereotype">&lt;&lt;${d.stereotype}&gt;&gt;</div>`;
             }
 
+            // Show brief summary for functions
+            if (d.brief) {
+                html += `<div class="tooltip-section">`;
+                html += `<div class="tooltip-section-title">Summary</div>`;
+                html += `<div style="color: #555; font-size: 12px; line-height: 1.4;">${d.brief}</div>`;
+                html += `</div>`;
+            }
+
+            // Show documentation for functions
+            if (d.documentation) {
+                html += `<div class="tooltip-section">`;
+                html += `<div class="tooltip-section-title">Documentation</div>`;
+                html += `<div style="color: #555; font-size: 11px; line-height: 1.4;">${d.documentation}</div>`;
+                html += `</div>`;
+            }
+
+            // Show classes for files
+            if (d.classes && d.classes.length > 0) {
+                html += `<div class="tooltip-section">`;
+                html += `<div class="tooltip-section-title">Classes (${d.classes.length})</div>`;
+                d.classes.slice(0, 10).forEach(cls => {
+                    html += `<div class="tooltip-member">${cls}</div>`;
+                });
+                if (d.classes.length > 10) {
+                    html += `<div style="color: #888; font-size: 10px; margin-top: 4px;">... and ${d.classes.length - 10} more</div>`;
+                }
+                html += `</div>`;
+            }
+
+            // Show functions for files
+            if (d.functions && d.functions.length > 0) {
+                html += `<div class="tooltip-section">`;
+                html += `<div class="tooltip-section-title">Functions (${d.functions.length})</div>`;
+                d.functions.slice(0, 10).forEach(func => {
+                    html += `<div class="tooltip-member">${func}</div>`;
+                });
+                if (d.functions.length > 10) {
+                    html += `<div style="color: #888; font-size: 10px; margin-top: 4px;">... and ${d.functions.length - 10} more</div>`;
+                }
+                html += `</div>`;
+            }
+
             if (d.attributes && d.attributes.length > 0) {
                 html += `<div class="tooltip-section">`;
-                html += `<div class="tooltip-section-title">Attributes</div>`;
+                html += `<div class="tooltip-section-title">Attributes (${d.attributes.length})</div>`;
                 d.attributes.forEach(attr => {
                     html += `<div class="tooltip-member ${attr.visibility}">${attr.visibility === 'public' ? '+' : attr.visibility === 'private' ? '-' : '#'} ${attr.definition}</div>`;
                 });
@@ -557,7 +607,7 @@
 
             if (d.methods && d.methods.length > 0) {
                 html += `<div class="tooltip-section">`;
-                html += `<div class="tooltip-section-title">Methods</div>`;
+                html += `<div class="tooltip-section-title">Methods (${d.methods.length})</div>`;
                 d.methods.forEach(method => {
                     html += `<div class="tooltip-member ${method.visibility}">${method.visibility === 'public' ? '+' : method.visibility === 'private' ? '-' : '#'} ${method.definition}</div>`;
                 });
@@ -566,16 +616,11 @@
 
             if (d.members && d.members.length > 0) {
                 html += `<div class="tooltip-section">`;
-                html += `<div class="tooltip-section-title">Values</div>`;
+                html += `<div class="tooltip-section-title">Values (${d.members.length})</div>`;
                 d.members.forEach(member => {
                     html += `<div class="tooltip-member">${member}</div>`;
                 });
                 html += `</div>`;
-            }
-
-            if (!d.stereotype && (!d.attributes || d.attributes.length === 0) &&
-                (!d.methods || d.methods.length === 0) && (!d.members || d.members.length === 0)) {
-                html += `<div class="tooltip-section"><div style="color: #888; font-style: italic;">Type: ${d.type || 'node'}</div></div>`;
             }
 
             tooltip.html(html)
@@ -725,10 +770,125 @@
             document.getElementById('error').innerHTML = '';
         }
 
+        function convertMCPToD3Format(data) {
+            // Check if it's already in D3 format (has "highlighted" boolean)
+            if (data.nodes && data.nodes.length > 0 && typeof data.nodes[0].highlighted === 'boolean') {
+                return data; // Already D3 format
+            }
+
+            // Convert from MCP format to D3 format
+            const d3Data = {
+                graphType: data.graphType || "classDiagram",
+                nodes: [],
+                edges: []
+            };
+
+            // Convert nodes
+            if (data.nodes) {
+                data.nodes.forEach(node => {
+                    // Extract display name from ID (handle paths and complex IDs)
+                    let displayName = node.id;
+                    if (node.type === "file") {
+                        // For files, show just the filename
+                        const parts = node.id.split("/");
+                        displayName = parts[parts.length - 1];
+                    } else if (node.id.includes("::")) {
+                        // For qualified names like "File::function", show just the function name
+                        displayName = node.id.split("::").pop();
+                    } else {
+                        // For other types, show the full name
+                        displayName = node.id;
+                    }
+
+                    const d3Node = {
+                        id: node.id,
+                        fullPath: node.id, // Store full path for tooltip
+                        label: displayName,
+                        type: node.type || "class",
+                        highlighted: (node.highlight || 0) > 0 // Convert int to boolean
+                    };
+
+                    const metadata = node.metadata || {};
+
+                    // Convert class metadata
+                    if (node.type === "class") {
+                        if (metadata.attributes) {
+                            d3Node.attributes = metadata.attributes.map(attr => ({
+                                visibility: "public",
+                                definition: attr
+                            }));
+                        }
+                        if (metadata.functions) {
+                            d3Node.methods = metadata.functions.map(func => ({
+                                visibility: "public",
+                                definition: func
+                            }));
+                        }
+                    }
+
+                    // Convert function metadata
+                    if (node.type === "function") {
+                        const params = metadata.parameters || [];
+                        const returns = metadata.returns || "void";
+                        const brief = metadata.brief_summary || "";
+                        const doc = metadata.full_documentation || "";
+
+                        d3Node.methods = [{
+                            visibility: "public",
+                            definition: `(${params.join(', ')}) -> ${returns}`
+                        }];
+
+                        if (brief) d3Node.brief = brief;
+                        if (doc) d3Node.documentation = doc;
+                    }
+
+                    // Convert file metadata
+                    if (node.type === "file" && metadata) {
+                        if (metadata.classes && metadata.classes.length > 0) {
+                            d3Node.classes = metadata.classes;
+                        }
+                        if (metadata.functions && metadata.functions.length > 0) {
+                            d3Node.functions = metadata.functions;
+                        }
+                    }
+
+                    // Keep existing attributes/methods if already present
+                    if (node.attributes) d3Node.attributes = node.attributes;
+                    if (node.methods) d3Node.methods = node.methods;
+                    if (node.members) d3Node.members = node.members;
+                    if (node.stereotype) d3Node.stereotype = node.stereotype;
+
+                    d3Data.nodes.push(d3Node);
+                });
+            }
+
+            // Convert edges
+            if (data.edges) {
+                const edgeTypeMap = {
+                    "inherit": "inherits",
+                    "invokes": "uses",
+                    "contains": "contains"
+                };
+
+                data.edges.forEach(edge => {
+                    d3Data.edges.push({
+                        source: edge.source,
+                        target: edge.target,
+                        type: edgeTypeMap[edge.type] || edge.type || "uses",
+                        label: edge.label || edge.type || "",
+                        highlighted: (edge.highlight || 0) > 0 // Convert int to boolean
+                    });
+                });
+            }
+
+            return d3Data;
+        }
+
         function loadJSON(content) {
             try {
                 const data = JSON.parse(content);
-                renderGraph(data);
+                const d3Data = convertMCPToD3Format(data);
+                renderGraph(d3Data);
             } catch (error) {
                 showError(`Error parsing JSON: ${error.message}`);
                 console.error(error);
@@ -778,19 +938,33 @@
         // Initialize
         initGraph();
 
-        // Auto-load test-graph.json if available
-        fetch('test-graph.json')
-            .then(response => {
-                if (!response.ok) throw new Error('File not found');
-                return response.text();
-            })
-            .then(content => loadJSON(content))
-            .catch((error) => {
-                console.log('No default JSON file found. Please load a file.', error);
-                document.getElementById('info').innerHTML =
-                    '<div>No graph loaded. Drop a .json file or use the file picker</div>' +
-                    '<div id="stats"></div>';
-            });
+        // Try to auto-load from MCP output path first, then fallback to test-graph.json
+        const autoLoadPaths = [
+            '../code_graph.json',  // MCP tool output location
+            'test-graph.json'          // Fallback test file
+        ];
+
+        async function tryAutoLoad() {
+            for (const path of autoLoadPaths) {
+                try {
+                    const response = await fetch(path);
+                    if (response.ok) {
+                        const content = await response.text();
+                        loadJSON(content);
+                        console.log(`Loaded graph from: ${path}`);
+                        return;
+                    }
+                } catch (error) {
+                    console.log(`Could not load from ${path}:`, error);
+                }
+            }
+            // No file found
+            document.getElementById('info').innerHTML =
+                '<div>No graph loaded. Drop a .json file or use the file picker</div>' +
+                '<div id="stats"></div>';
+        }
+
+        tryAutoLoad();
     </script>
 </body>
 </html>
