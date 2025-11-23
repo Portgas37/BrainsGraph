@@ -842,10 +842,11 @@
         html += `<span style="font-size: 11px; color: #666;">${count}</span>`;
         html += `</div>`;
         html += `<div class="metadata-field-content">`;
-        
+
         if (type === 'function') {
             items.forEach(item => {
-                html += `<div class="metadata-item" style="color: #2d7a3e; font-weight: 500;">${item}</div>`;
+                const funcName = typeof item === 'object' ? (item.definition || item) : item;
+                html += `<div class="metadata-item" style="color: #2d7a3e; font-weight: 500;">${funcName}</div>`;
             });
         } else if (type === 'attribute') {
             items.forEach(attr => {
@@ -859,7 +860,7 @@
                 html += `<div class="metadata-item">${item}</div>`;
             });
         }
-        
+
         html += `</div></div>`;
         return html;
     }
@@ -964,27 +965,27 @@
         tooltip.html(html)
             .style("display", "block")
             .style("pointer-events", "auto");
-        
-        // Smart positioning: place tooltip to the right of the cursor, 
+
+        // Smart positioning: place tooltip to the right of the cursor,
         // but adjust if it would go off-screen
         const tooltipNode = tooltip.node();
         const tooltipWidth = 500; // max-width from CSS
         const tooltipHeight = tooltipNode.offsetHeight;
         const padding = 15;
-        
+
         let left = event.pageX + 25;
         let top = event.pageY + 15;
-        
+
         // Check if tooltip would go off-screen horizontally
         if (left + tooltipWidth > window.innerWidth) {
             left = Math.max(padding, event.pageX - tooltipWidth - 25);
         }
-        
+
         // Check if tooltip would go off-screen vertically
         if (top + tooltipHeight > window.innerHeight) {
             top = Math.max(padding, window.innerHeight - tooltipHeight - padding);
         }
-        
+
         tooltip
             .style("left", left + "px")
             .style("top", top + "px");
