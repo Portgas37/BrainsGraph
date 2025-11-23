@@ -506,28 +506,54 @@
         // Update nodes
         d3.selectAll('.node').each(function(d) {
             const node = d3.select(this);
-            if (d.highlighted && !visibleGroups.has(String(d.highlightGroup))) {
-                // Hide highlight - revert to default style
-                node.classed('highlighted', false);
-                node.classed(`highlight-${d.highlightGroup}`, false);
-            } else if (d.highlighted && visibleGroups.has(String(d.highlightGroup))) {
-                // Show highlight
-                node.classed('highlighted', true);
-                node.classed(`highlight-${d.highlightGroup}`, true);
+
+            // Remove all highlight classes first
+            for (let i = 1; i <= 10; i++) {
+                node.classed(`highlight-${i}`, false);
+            }
+            node.classed('highlighted', false);
+
+            // If this node has highlight groups, find the highest visible one
+            if (d.highlightGroups && d.highlightGroups.length > 0) {
+                const visibleHighlightGroups = d.highlightGroups.filter(g => visibleGroups.has(String(g)));
+
+                if (visibleHighlightGroups.length > 0) {
+                    // Show the highest priority (highest number) visible group
+                    const highestVisibleGroup = Math.max(...visibleHighlightGroups);
+                    node.classed('highlighted', true);
+                    node.classed(`highlight-${highestVisibleGroup}`, true);
+                }
             }
         });
 
         // Update edges
         d3.selectAll('.link').each(function(d) {
             const link = d3.select(this);
-            if (d.highlighted && !visibleGroups.has(String(d.highlightGroup))) {
-                // Hide highlight
-                link.classed('highlighted', false);
-                link.classed(`highlight-${d.highlightGroup}`, false);
-            } else if (d.highlighted && visibleGroups.has(String(d.highlightGroup))) {
-                // Show highlight
-                link.classed('highlighted', true);
-                link.classed(`highlight-${d.highlightGroup}`, true);
+
+            // Remove all highlight classes first
+            for (let i = 1; i <= 10; i++) {
+                link.classed(`highlight-${i}`, false);
+            }
+            link.classed('highlighted', false);
+
+            // If this edge has highlight groups, find the highest visible one
+            if (d.highlightGroups && d.highlightGroups.length > 0) {
+                const visibleHighlightGroups = d.highlightGroups.filter(g => visibleGroups.has(String(g)));
+
+                if (visibleHighlightGroups.length > 0) {
+                    // Show the highest priority (highest number) visible group
+                    const highestVisibleGroup = Math.max(...visibleHighlightGroups);
+                    link.classed('highlighted', true);
+                    link.classed(`highlight-${highestVisibleGroup}`, true);
+
+                    // Update marker-end to use the correct color
+                    const type = d.type || 'default';
+                    link.attr("marker-end", `url(#arrow-${type}-highlight-${highestVisibleGroup})`);
+                }
+            } else {
+                // No visible highlights, revert to default marker
+                const type = d.type || 'default';
+                link.attr("marker-end", `url(#arrow-${type})`);
             }
         });
 
