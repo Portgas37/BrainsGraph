@@ -365,7 +365,11 @@ def highlight_edges(edge_ids: list[str], color: int) -> str:
     """
     graph = load_graph()
 
-    # Don't reset all highlights - only update the specified edges
+    # First, reset all highlights
+    for edge in graph["edges"]:
+        edge["highlight"] = 0
+
+    # Then apply new highlights
     highlighted_count = 0
     edge_id_set = set(edge_ids)
 
