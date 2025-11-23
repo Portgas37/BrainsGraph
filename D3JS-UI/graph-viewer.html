@@ -201,7 +201,7 @@
             border: 2px solid #666;
             border-radius: 8px;
             padding: 15px;
-            pointer-events: none;
+            pointer-events: auto;
             z-index: 2000;
             max-width: 500px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.2);
@@ -261,6 +261,67 @@
 
         .tooltip-member.protected {
             color: #b7791f;
+        }
+
+        .metadata-field {
+            cursor: pointer;
+            user-select: none;
+            padding: 6px 8px;
+            margin: 4px 0;
+            border-radius: 4px;
+            background: #f5f5f5;
+            border-left: 3px solid #999;
+            transition: all 0.2s;
+        }
+
+        .metadata-field:hover {
+            background: #efefef;
+            border-left-color: #666;
+        }
+
+        .metadata-field.expanded {
+            background: #e8f5e9;
+            border-left-color: #4caf50;
+        }
+
+        .metadata-field-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 500;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .metadata-field-toggle {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .metadata-field-content {
+            display: none;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #ddd;
+        }
+
+        .metadata-field.expanded .metadata-field-content {
+            display: block;
+        }
+
+        .metadata-item {
+            padding: 3px 8px;
+            margin: 2px 0;
+            background: white;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 11px;
+            color: #444;
+            word-break: break-word;
         }
 
         #info {
@@ -585,8 +646,12 @@
             .attr("rx", 50)
             .attr("ry", 30)
             .on("mouseenter", showTooltip)
-            .on("mousemove", moveTooltip)
-            .on("mouseleave", hideTooltip)
+            .on("mouseleave", () => {
+                // Hide tooltip with a small delay to allow entering the tooltip itself
+                tooltipHideTimeout = setTimeout(() => {
+                    hideTooltip();
+                }, 200);
+            })
             .call(d3.drag()
                 .on("start", dragstarted)
                 .on("drag", dragged)
@@ -629,18 +694,80 @@
 
     // Tooltip functions
     let tooltip = null;
+    let tooltipHideTimeout = null;
 
     function createTooltip() {
         if (!tooltip) {
             tooltip = d3.select("body")
                 .append("div")
                 .attr("class", "tooltip")
-                .style("display", "none");
+                .style("display", "none")
+                .on("mouseenter", () => {
+                    // Clear any pending hide when entering tooltip
+                    if (tooltipHideTimeout) {
+                        clearTimeout(tooltipHideTimeout);
+                        tooltipHideTimeout = null;
+                    }
+                })
+                .on("mouseleave", () => {
+                    // Hide tooltip with a small delay when leaving
+                    tooltipHideTimeout = setTimeout(() => {
+                        hideTooltip();
+                    }, 100);
+                });
         }
         return tooltip;
     }
 
+    function createMetadataField(title, count, items, type = 'item') {
+        let fieldId = `field_${Math.random().toString(36).substr(2, 9)}`;
+        let html = `<div class="metadata-field" id="${fieldId}">`;
+        html += `<div class="metadata-field-header" onclick="toggleMetadataField('${fieldId}', event)">`;
+        html += `<span><span class="metadata-field-toggle">▶</span>${title}</span>`;
+        html += `<span style="font-size: 11px; color: #666;">${count}</span>`;
+        html += `</div>`;
+        html += `<div class="metadata-field-content">`;
+        
+        if (type === 'function') {
+            items.forEach(item => {
+                html += `<div class="metadata-item" style="color: #2d7a3e; font-weight: 500;">${item}</div>`;
+            });
+        } else if (type === 'attribute') {
+            items.forEach(attr => {
+                const visibility = attr.visibility || 'public';
+                const symbol = visibility === 'public' ? '+' : visibility === 'private' ? '-' : '#';
+                const color = visibility === 'public' ? '#2d7a3e' : visibility === 'private' ? '#c53030' : '#b7791f';
+                html += `<div class="metadata-item" style="color: ${color};">${symbol} ${attr.definition || attr}</div>`;
+            });
+        } else {
+            items.forEach(item => {
+                html += `<div class="metadata-item">${item}</div>`;
+            });
+        }
+        
+        html += `</div></div>`;
+        return html;
+    }
+
+    function toggleMetadataField(fieldId, event) {
+        event.stopPropagation();
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.classList.toggle('expanded');
+            const toggle = field.querySelector('.metadata-field-toggle');
+            if (toggle) {
+                toggle.textContent = field.classList.contains('expanded') ? '▼' : '▶';
+            }
+        }
+    }
+
     function showTooltip(event, d) {
+        // Clear any pending hide timeout
+        if (tooltipHideTimeout) {
+            clearTimeout(tooltipHideTimeout);
+            tooltipHideTimeout = null;
+        }
+
         const tooltip = createTooltip();
 
         let html = `<div class="tooltip-title">${d.label}${d.highlighted ? ` <span class="highlight-badge" style="background: ${getHighlightColor(d.highlightGroup)}">GROUP ${d.highlightGroup}</span>` : ''}</div>`;
@@ -681,77 +808,71 @@
             html += `</div>`;
         }
 
-        // Show classes for files
+        // Show classes for files (clickable)
         if (d.classes && d.classes.length > 0) {
-            html += `<div class="tooltip-section">`;
-            html += `<div class="tooltip-section-title">Classes (${d.classes.length})</div>`;
-            d.classes.slice(0, 10).forEach(cls => {
-                html += `<div class="tooltip-member">${cls}</div>`;
-            });
-            if (d.classes.length > 10) {
-                html += `<div style="color: #888; font-size: 10px; margin-top: 4px;">... and ${d.classes.length - 10} more</div>`;
-            }
-            html += `</div>`;
+            html += createMetadataField(`Classes`, `(${d.classes.length})`, d.classes, 'item');
         }
 
-        // Show functions for files
+        // Show functions for files (clickable)
         if (d.functions && d.functions.length > 0) {
-            html += `<div class="tooltip-section">`;
-            html += `<div class="tooltip-section-title">Functions (${d.functions.length})</div>`;
-            d.functions.slice(0, 10).forEach(func => {
-                html += `<div class="tooltip-member function">${func}</div>`;
-            });
-            if (d.functions.length > 10) {
-                html += `<div style="color: #888; font-size: 10px; margin-top: 4px;">... and ${d.functions.length - 10} more</div>`;
-            }
-            html += `</div>`;
+            html += createMetadataField(`Functions`, `(${d.functions.length})`, d.functions, 'function');
         }
 
+        // Show attributes (clickable)
         if (d.attributes && d.attributes.length > 0) {
-            html += `<div class="tooltip-section">`;
-            html += `<div class="tooltip-section-title">Attributes (${d.attributes.length})</div>`;
-            d.attributes.forEach(attr => {
-                const visibility = attr.visibility || 'public';
-                const symbol = visibility === 'public' ? '+' : visibility === 'private' ? '-' : '#';
-                html += `<div class="tooltip-member ${visibility}">${symbol} ${attr.definition || attr}</div>`;
-            });
-            html += `</div>`;
+            html += createMetadataField(`Attributes`, `(${d.attributes.length})`, d.attributes, 'attribute');
         }
 
-        // Show methods (for classes only, not functions)
+        // Show methods (for classes only, not functions) (clickable)
         if (d.methods && d.methods.length > 0 && d.type !== 'function') {
-            html += `<div class="tooltip-section">`;
-            html += `<div class="tooltip-section-title">Methods (${d.methods.length})</div>`;
-            d.methods.forEach(method => {
-                const visibility = method.visibility || 'public';
-                const symbol = visibility === 'public' ? '+' : visibility === 'private' ? '-' : '#';
-                const definition = method.definition || method;
-                html += `<div class="tooltip-member method ${visibility}">${symbol} ${definition}</div>`;
-            });
-            html += `</div>`;
+            html += createMetadataField(`Methods`, `(${d.methods.length})`, d.methods, 'function');
         }
 
+        // Show members (clickable)
         if (d.members && d.members.length > 0) {
+            html += createMetadataField(`Values`, `(${d.members.length})`, d.members, 'item');
+        }
+
+        // Show parameters (clickable)
+        if (d.parameters && d.parameters.length > 0) {
+            html += createMetadataField(`Parameters`, `(${d.parameters.length})`, d.parameters, 'item');
+        }
+
+        // Show returns info
+        if (d.returns) {
             html += `<div class="tooltip-section">`;
-            html += `<div class="tooltip-section-title">Values (${d.members.length})</div>`;
-            d.members.forEach(member => {
-                html += `<div class="tooltip-member">${member}</div>`;
-            });
+            html += `<div class="tooltip-section-title">Returns</div>`;
+            html += `<div class="metadata-item">${d.returns}</div>`;
             html += `</div>`;
         }
 
         tooltip.html(html)
             .style("display", "block")
-            .style("left", (event.pageX + 15) + "px")
-            .style("top", (event.pageY + 15) + "px");
-    }
-
-    function moveTooltip(event) {
-        if (tooltip) {
-            tooltip
-                .style("left", (event.pageX + 15) + "px")
-                .style("top", (event.pageY + 15) + "px");
+            .style("pointer-events", "auto");
+        
+        // Smart positioning: place tooltip to the right of the cursor, 
+        // but adjust if it would go off-screen
+        const tooltipNode = tooltip.node();
+        const tooltipWidth = 500; // max-width from CSS
+        const tooltipHeight = tooltipNode.offsetHeight;
+        const padding = 15;
+        
+        let left = event.pageX + 25;
+        let top = event.pageY + 15;
+        
+        // Check if tooltip would go off-screen horizontally
+        if (left + tooltipWidth > window.innerWidth) {
+            left = Math.max(padding, event.pageX - tooltipWidth - 25);
         }
+        
+        // Check if tooltip would go off-screen vertically
+        if (top + tooltipHeight > window.innerHeight) {
+            top = Math.max(padding, window.innerHeight - tooltipHeight - padding);
+        }
+        
+        tooltip
+            .style("left", left + "px")
+            .style("top", top + "px");
     }
 
     function hideTooltip() {
