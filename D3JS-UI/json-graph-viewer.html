@@ -25,55 +25,35 @@
 
         #controls {
             position: fixed;
-            top: 20px;
-            left: 20px;
+            top: 10px;
+            left: 10px;
             background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-            max-width: 400px;
-        }
-
-        #controls h2 {
-            margin: 0 0 15px 0;
-            font-size: 18px;
-            color: #333;
-        }
-
-        .file-input-wrapper {
-            margin-bottom: 15px;
-        }
-
-        input[type="file"] {
-            display: block;
             padding: 10px;
-            border: 2px dashed #ccc;
-            border-radius: 4px;
-            width: 100%;
-            cursor: pointer;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 1000;
+            max-width: 280px;
+            font-size: 11px;
         }
-
-        input[type="file"]:hover {
-            border-color: #666;
-        }
-
         .button-group {
             display: flex;
-            gap: 10px;
+            gap: 6px;
             flex-wrap: wrap;
         }
 
         button {
-            padding: 10px 16px;
+            padding: 6px 10px;
             background: #666;
             border: none;
-            border-radius: 4px;
+            border-radius: 3px;
             color: white;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 11px;
             font-weight: 500;
-            transition: background 0.2s;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         button:hover {
@@ -83,6 +63,17 @@
         button:active {
             background: #444;
         }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
 
         #graph {
             position: fixed;
@@ -116,21 +107,29 @@
             stroke-dasharray: 6,3;
         }
 
-        .node:hover {
+        .node:not(.highlighted):hover {
             fill: #c5c5c5;
             stroke: #333;
             stroke-width: 3px;
         }
 
         .node.highlighted {
-            fill: #ffd93d !important;
-            stroke: #ff6b6b !important;
             stroke-width: 3px !important;
-            filter: drop-shadow(0 0 8px rgba(255, 107, 107, 0.6));
         }
 
+        .node.highlight-1 { fill: #ffd93d !important; stroke: #ff6b6b !important; filter: drop-shadow(0 0 8px rgba(255, 107, 107, 0.6)) !important; }
+        .node.highlight-2 { fill: #a8e6cf !important; stroke: #3cb371 !important; filter: drop-shadow(0 0 8px rgba(60, 179, 113, 0.6)) !important; }
+        .node.highlight-3 { fill: #ff9ff3 !important; stroke: #da70d6 !important; filter: drop-shadow(0 0 8px rgba(218, 112, 214, 0.6)) !important; }
+        .node.highlight-4 { fill: #feca57 !important; stroke: #ee5a24 !important; filter: drop-shadow(0 0 8px rgba(238, 90, 36, 0.6)) !important; }
+        .node.highlight-5 { fill: #48dbfb !important; stroke: #0abde3 !important; filter: drop-shadow(0 0 8px rgba(10, 189, 227, 0.6)) !important; }
+        .node.highlight-6 { fill: #ff6348 !important; stroke: #e74c3c !important; filter: drop-shadow(0 0 8px rgba(231, 76, 60, 0.6)) !important; }
+        .node.highlight-7 { fill: #dfe6e9 !important; stroke: #636e72 !important; filter: drop-shadow(0 0 8px rgba(99, 110, 114, 0.6)) !important; }
+        .node.highlight-8 { fill: #a29bfe !important; stroke: #6c5ce7 !important; filter: drop-shadow(0 0 8px rgba(108, 92, 231, 0.6)) !important; }
+        .node.highlight-9 { fill: #fd79a8 !important; stroke: #e84393 !important; filter: drop-shadow(0 0 8px rgba(232, 67, 147, 0.6)) !important; }
+        .node.highlight-10 { fill: #00b894 !important; stroke: #00cec9 !important; filter: drop-shadow(0 0 8px rgba(0, 206, 201, 0.6)) !important; }
+
         .node.highlighted:hover {
-            fill: #ffc107 !important;
+            opacity: 0.8;
         }
 
         .link {
@@ -160,11 +159,20 @@
         }
 
         .link.highlighted {
-            stroke: #ff6b6b !important;
             stroke-width: 4px !important;
-            filter: drop-shadow(0 0 6px rgba(255, 107, 107, 0.8));
             animation: pulse 2s ease-in-out infinite;
         }
+
+        .link.highlight-1 { stroke: #ff6b6b !important; filter: drop-shadow(0 0 6px rgba(255, 107, 107, 0.8)) !important; }
+        .link.highlight-2 { stroke: #3cb371 !important; filter: drop-shadow(0 0 6px rgba(60, 179, 113, 0.8)) !important; }
+        .link.highlight-3 { stroke: #da70d6 !important; filter: drop-shadow(0 0 6px rgba(218, 112, 214, 0.8)) !important; }
+        .link.highlight-4 { stroke: #ee5a24 !important; filter: drop-shadow(0 0 6px rgba(238, 90, 36, 0.8)) !important; }
+        .link.highlight-5 { stroke: #0abde3 !important; filter: drop-shadow(0 0 6px rgba(10, 189, 227, 0.8)) !important; }
+        .link.highlight-6 { stroke: #e74c3c !important; filter: drop-shadow(0 0 6px rgba(231, 76, 60, 0.8)) !important; }
+        .link.highlight-7 { stroke: #636e72 !important; filter: drop-shadow(0 0 6px rgba(99, 110, 114, 0.8)) !important; }
+        .link.highlight-8 { stroke: #6c5ce7 !important; filter: drop-shadow(0 0 6px rgba(108, 92, 231, 0.8)) !important; }
+        .link.highlight-9 { stroke: #e84393 !important; filter: drop-shadow(0 0 6px rgba(232, 67, 147, 0.8)) !important; }
+        .link.highlight-10 { stroke: #00cec9 !important; filter: drop-shadow(0 0 6px rgba(0, 206, 201, 0.8)) !important; }
 
         @keyframes pulse {
             0%, 100% { opacity: 1; }
@@ -238,6 +246,11 @@
             padding-left: 10px;
         }
 
+        .tooltip-member.function,
+        .tooltip-member.method {
+            color: #2d7a3e;
+        }
+
         .tooltip-member.private {
             color: #c53030;
         }
@@ -255,12 +268,13 @@
             bottom: 20px;
             left: 20px;
             background: rgba(255, 255, 255, 0.95);
-            padding: 15px;
+            padding: 15px 20px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             z-index: 1000;
-            font-size: 13px;
+            font-size: 14px;
             color: #666;
+            min-width: 250px;
         }
 
         #legend {
@@ -301,21 +315,13 @@
 </head>
 <body>
     <div id="controls">
-        <h2>JSON Graph Viewer</h2>
-        <div class="file-input-wrapper">
-            <input type="file" id="fileInput" accept=".json" />
-            <div style="font-size: 10px; color: #888; margin-top: 5px;">
-                Load JSON graph with highlight flags
-            </div>
-        </div>
         <div class="button-group">
-            <button onclick="resetSimulation()">Reset Layout</button>
-            <button onclick="centerGraph()">Center</button>
-            <button onclick="changeLayout()">Change Direction</button>
-            <button onclick="toggleControls()">Hide Controls</button>
+            <button class="icon-btn" onclick="resetSimulation()" title="Reset Layout">🔄</button>
+            <button class="icon-btn" onclick="centerGraph()" title="Center">🎯</button>
+            <button class="icon-btn" onclick="changeLayout()" title="Change Direction">↔️</button>
         </div>
-        <div style="margin-top: 10px; font-size: 11px; color: #666;">
-            Layout: <span id="layoutMode">Left to Right</span>
+        <div style="margin-top: 8px; font-size: 11px; color: #666; font-weight: 600;">
+            <span id="layoutMode">LR</span>
         </div>
         <div id="error"></div>
     </div>
@@ -326,21 +332,21 @@
     </div>
 
     <div id="legend">
-        <h3 style="margin: 0 0 12px 0; font-size: 14px; color: #333; border-bottom: 2px solid #ddd; padding-bottom: 8px;">
+        <h3 style="margin: 0 0 8px 0; font-size: 12px; color: #333; border-bottom: 1px solid #ddd; padding-bottom: 6px;">
             Legend
         </h3>
-        <div style="margin-bottom: 10px;">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                <div style="width: 20px; height: 20px; background: #ffd93d; border: 3px solid #ff6b6b; border-radius: 50%; box-shadow: 0 0 8px rgba(255,107,107,0.6);"></div>
-                <div style="font-size: 11px; color: #444;"><strong>Highlighted Node</strong></div>
+        <div style="margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                <div style="width: 14px; height: 14px; background: #ffd93d; border: 2px solid #ff6b6b; border-radius: 50%;"></div>
+                <div style="font-size: 10px; color: #444;">Highlighted</div>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <div style="width: 40px; height: 4px; background: #ff6b6b; box-shadow: 0 0 6px rgba(255,107,107,0.8);"></div>
-                <div style="font-size: 11px; color: #444;"><strong>Highlighted Path</strong></div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <div style="width: 30px; height: 3px; background: #ff6b6b;"></div>
+                <div style="font-size: 10px; color: #444;">Path</div>
             </div>
         </div>
-        <div style="font-size: 10px; color: #888; margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd;">
-            Set "highlighted": true in JSON to highlight nodes/edges
+        <div id="colorGroupsLegend" style="margin-top: 8px;">
+            <!-- Dynamically populated based on active groups -->
         </div>
     </div>
 
@@ -351,6 +357,48 @@
         let simulation, svg, g, zoom;
         let nodes = [], links = [];
         let currentLayout = 'LR';
+
+        // Color mapping for highlight groups
+        const highlightColors = {
+            1: { stroke: '#ff6b6b', fill: '#ffd93d', name: 'Red/Yellow' },
+            2: { stroke: '#3cb371', fill: '#a8e6cf', name: 'Green' },
+            3: { stroke: '#da70d6', fill: '#ff9ff3', name: 'Purple' },
+            4: { stroke: '#ee5a24', fill: '#feca57', name: 'Orange' },
+            5: { stroke: '#0abde3', fill: '#48dbfb', name: 'Cyan' },
+            6: { stroke: '#e74c3c', fill: '#ff6348', name: 'Red' },
+            7: { stroke: '#636e72', fill: '#dfe6e9', name: 'Gray' },
+            8: { stroke: '#6c5ce7', fill: '#a29bfe', name: 'Indigo' },
+            9: { stroke: '#e84393', fill: '#fd79a8', name: 'Pink' },
+            10: { stroke: '#00cec9', fill: '#00b894', name: 'Turquoise' }
+        };
+
+        function getHighlightColor(group) {
+            return highlightColors[group] ? highlightColors[group].stroke : '#ff6b6b';
+        }
+
+        function updateColorGroupsLegend(activeGroups) {
+            const legendDiv = document.getElementById('colorGroupsLegend');
+            if (activeGroups.size === 0) {
+                legendDiv.innerHTML = '';
+                return;
+            }
+
+            let html = '<div style="font-size: 10px; font-weight: 600; margin-bottom: 4px; padding-top: 6px; border-top: 1px solid #ddd;">Groups:</div>';
+            html += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; font-size: 9px;">';
+
+            Array.from(activeGroups.keys()).sort((a, b) => a - b).forEach(group => {
+                const color = highlightColors[group];
+                if (color) {
+                    html += `<div style="display: flex; align-items: center; gap: 3px;">
+                        <div style="width: 10px; height: 10px; background: ${color.stroke}; border-radius: 50%;"></div>
+                        G${group}
+                    </div>`;
+                }
+            });
+
+            html += '</div>';
+            legendDiv.innerHTML = html;
+        }
 
         function initGraph() {
             const width = window.innerWidth;
@@ -371,26 +419,48 @@
             
             svg.call(zoom);
 
-            // Arrow markers
-            svg.append("defs").selectAll("marker")
-                .data(["default", "contains", "uses", "references", "inherits"])
-                .join("marker")
-                .attr("id", d => `arrow-${d}`)
-                .attr("viewBox", "0 -5 10 10")
-                .attr("refX", 25)
-                .attr("refY", 0)
-                .attr("markerWidth", 6)
-                .attr("markerHeight", 6)
-                .attr("orient", "auto")
-                .append("path")
-                .attr("d", "M0,-5L10,0L0,5")
-                .attr("fill", d => {
-                    if (d === "contains") return "#666";
-                    if (d === "uses") return "#aaa";
-                    if (d === "references") return "#888";
-                    if (d === "inherits") return "#666";
-                    return "#999";
-                });
+            // Arrow markers - create for each type and each highlight group
+            const defs = svg.append("defs");
+
+            // Default arrow markers
+            const arrowTypes = ["default", "contains", "uses", "references", "inherits"];
+            arrowTypes.forEach(type => {
+                defs.append("marker")
+                    .attr("id", `arrow-${type}`)
+                    .attr("viewBox", "0 -5 10 10")
+                    .attr("refX", 25)
+                    .attr("refY", 0)
+                    .attr("markerWidth", 6)
+                    .attr("markerHeight", 6)
+                    .attr("orient", "auto")
+                    .append("path")
+                    .attr("d", "M0,-5L10,0L0,5")
+                    .attr("fill", () => {
+                        if (type === "contains") return "#666";
+                        if (type === "uses") return "#aaa";
+                        if (type === "references") return "#888";
+                        if (type === "inherits") return "#666";
+                        return "#999";
+                    });
+
+                // Create colored markers for each highlight group
+                for (let i = 1; i <= 10; i++) {
+                    const color = highlightColors[i];
+                    if (color) {
+                        defs.append("marker")
+                            .attr("id", `arrow-${type}-highlight-${i}`)
+                            .attr("viewBox", "0 -5 10 10")
+                            .attr("refX", 25)
+                            .attr("refY", 0)
+                            .attr("markerWidth", 6)
+                            .attr("markerHeight", 6)
+                            .attr("orient", "auto")
+                            .append("path")
+                            .attr("d", "M0,-5L10,0L0,5")
+                            .attr("fill", color.stroke);
+                    }
+                }
+            });
         }
 
         function renderGraph(data) {
@@ -404,14 +474,40 @@
                 return;
             }
 
-            // Count highlighted elements
+            // Count highlighted elements by group
+            const highlightGroups = new Map();
+            nodes.filter(n => n.highlighted).forEach(n => {
+                const group = n.highlightGroup;
+                highlightGroups.set(group, (highlightGroups.get(group) || 0) + 1);
+                console.log(`Highlighted node: ${n.id}, group: ${group}, highlighted: ${n.highlighted}`);
+            });
+
+            // Also count edge groups
+            links.filter(l => l.highlighted).forEach(l => {
+                const group = l.highlightGroup;
+                highlightGroups.set(group, (highlightGroups.get(group) || 0) + 1);
+            });
+
             const highlightedNodes = nodes.filter(n => n.highlighted).length;
             const highlightedEdges = links.filter(l => l.highlighted).length;
 
-            document.getElementById('stats').innerHTML = 
-                `Nodes: ${nodes.length} | Edges: ${links.length}` +
-                (highlightedNodes > 0 ? ` <span class="highlight-badge">${highlightedNodes} highlighted</span>` : '') +
-                (highlightedEdges > 0 ? ` <span class="highlight-badge">${highlightedEdges} paths</span>` : '');
+            console.log(`Total highlighted nodes: ${highlightedNodes}, edges: ${highlightedEdges}`);
+
+            // Update the legend with only active groups
+            updateColorGroupsLegend(highlightGroups);
+
+            let statsHTML = `Nodes: ${nodes.length} | Edges: ${links.length}`;
+            if (highlightedNodes > 0) {
+                statsHTML += ` <span class="highlight-badge">${highlightedNodes} highlighted</span>`;
+                // Show groups
+                highlightGroups.forEach((count, group) => {
+                    statsHTML += ` <span class="highlight-badge" style="background: ${getHighlightColor(group)}">Group ${group}: ${count}</span>`;
+                });
+            }
+            if (highlightedEdges > 0) {
+                statsHTML += ` <span class="highlight-badge">${highlightedEdges} paths</span>`;
+            }
+            document.getElementById('stats').innerHTML = statsHTML;
 
             const width = window.innerWidth;
             const height = window.innerHeight;
@@ -451,8 +547,21 @@
                 .selectAll("path")
                 .data(links)
                 .join("path")
-                .attr("class", d => `link ${d.type || 'default'} ${d.highlighted ? 'highlighted' : ''}`)
-                .attr("marker-end", d => `url(#arrow-${d.type || 'default'})`);
+                .attr("class", d => {
+                    let classes = `link ${d.type || 'default'}`;
+                    if (d.highlighted) {
+                        classes += ` highlighted highlight-${d.highlightGroup}`;
+                        console.log(`Edge ${d.source.id || d.source} -> ${d.target.id || d.target} classes: ${classes}`);
+                    }
+                    return classes;
+                })
+                .attr("marker-end", d => {
+                    const type = d.type || 'default';
+                    if (d.highlighted) {
+                        return `url(#arrow-${type}-highlight-${d.highlightGroup})`;
+                    }
+                    return `url(#arrow-${type})`;
+                });
 
             // Create link labels
             const linkLabel = g.append("g")
@@ -467,7 +576,14 @@
                 .selectAll("circle")
                 .data(nodes)
                 .join("circle")
-                .attr("class", d => `node ${d.type || 'default'} ${d.highlighted ? 'highlighted' : ''}`)
+                .attr("class", d => {
+                    let classes = `node ${d.type || 'default'}`;
+                    if (d.highlighted) {
+                        classes += ` highlighted highlight-${d.highlightGroup}`;
+                        console.log(`Node ${d.id} classes: ${classes}`);
+                    }
+                    return classes;
+                })
                 .attr("r", 20)
                 .on("mouseenter", showTooltip)
                 .on("mousemove", moveTooltip)
@@ -521,6 +637,11 @@
                     .attr("y", d => d.y + 5);
             });
 
+            // Auto-center the graph after simulation stabilizes
+            simulation.on("end", () => {
+                setTimeout(() => centerGraph(), 100);
+            });
+
             clearError();
         }
 
@@ -540,7 +661,7 @@
         function showTooltip(event, d) {
             const tooltip = createTooltip();
 
-            let html = `<div class="tooltip-title">${d.label}${d.highlighted ? ' <span class="highlight-badge">HIGHLIGHTED</span>' : ''}</div>`;
+            let html = `<div class="tooltip-title">${d.label}${d.highlighted ? ` <span class="highlight-badge" style="background: ${getHighlightColor(d.highlightGroup)}">GROUP ${d.highlightGroup}</span>` : ''}</div>`;
 
             // Show full path if different from label
             if (d.fullPath && d.fullPath !== d.label) {
@@ -552,6 +673,14 @@
 
             if (d.stereotype) {
                 html += `<div class="tooltip-stereotype">&lt;&lt;${d.stereotype}&gt;&gt;</div>`;
+            }
+
+            // Show function signature for function nodes
+            if (d.type === 'function' && d.signature) {
+                html += `<div class="tooltip-section">`;
+                html += `<div class="tooltip-section-title">Signature</div>`;
+                html += `<div class="tooltip-member function" style="font-weight: bold;">${d.signature}</div>`;
+                html += `</div>`;
             }
 
             // Show brief summary for functions
@@ -588,7 +717,7 @@
                 html += `<div class="tooltip-section">`;
                 html += `<div class="tooltip-section-title">Functions (${d.functions.length})</div>`;
                 d.functions.slice(0, 10).forEach(func => {
-                    html += `<div class="tooltip-member">${func}</div>`;
+                    html += `<div class="tooltip-member function">${func}</div>`;
                 });
                 if (d.functions.length > 10) {
                     html += `<div style="color: #888; font-size: 10px; margin-top: 4px;">... and ${d.functions.length - 10} more</div>`;
@@ -600,16 +729,22 @@
                 html += `<div class="tooltip-section">`;
                 html += `<div class="tooltip-section-title">Attributes (${d.attributes.length})</div>`;
                 d.attributes.forEach(attr => {
-                    html += `<div class="tooltip-member ${attr.visibility}">${attr.visibility === 'public' ? '+' : attr.visibility === 'private' ? '-' : '#'} ${attr.definition}</div>`;
+                    const visibility = attr.visibility || 'public';
+                    const symbol = visibility === 'public' ? '+' : visibility === 'private' ? '-' : '#';
+                    html += `<div class="tooltip-member ${visibility}">${symbol} ${attr.definition || attr}</div>`;
                 });
                 html += `</div>`;
             }
 
-            if (d.methods && d.methods.length > 0) {
+            // Show methods (for classes only, not functions)
+            if (d.methods && d.methods.length > 0 && d.type !== 'function') {
                 html += `<div class="tooltip-section">`;
                 html += `<div class="tooltip-section-title">Methods (${d.methods.length})</div>`;
                 d.methods.forEach(method => {
-                    html += `<div class="tooltip-member ${method.visibility}">${method.visibility === 'public' ? '+' : method.visibility === 'private' ? '-' : '#'} ${method.definition}</div>`;
+                    const visibility = method.visibility || 'public';
+                    const symbol = visibility === 'public' ? '+' : visibility === 'private' ? '-' : '#';
+                    const definition = method.definition || method;
+                    html += `<div class="tooltip-member method ${visibility}">${symbol} ${definition}</div>`;
                 });
                 html += `</div>`;
             }
@@ -670,12 +805,44 @@
         }
 
         function centerGraph() {
-            if (!svg || !zoom) return;
+            if (!svg || !zoom || nodes.length === 0) return;
+
             const width = window.innerWidth;
             const height = window.innerHeight;
+
+            // Calculate bounding box of all nodes
+            let minX = Infinity, maxX = -Infinity;
+            let minY = Infinity, maxY = -Infinity;
+
+            nodes.forEach(node => {
+                if (node.x !== undefined && node.y !== undefined) {
+                    minX = Math.min(minX, node.x);
+                    maxX = Math.max(maxX, node.x);
+                    minY = Math.min(minY, node.y);
+                    maxY = Math.max(maxY, node.y);
+                }
+            });
+
+            // Calculate center of nodes and scale to fit
+            const graphWidth = maxX - minX;
+            const graphHeight = maxY - minY;
+            const graphCenterX = (minX + maxX) / 2;
+            const graphCenterY = (minY + maxY) / 2;
+
+            // Calculate scale to fit graph in viewport with padding
+            const scale = Math.min(
+                width / (graphWidth + 100),
+                height / (graphHeight + 100),
+                1.0 // Max zoom - keep at 1:1
+            );
+
+            // Calculate translation to center the graph
+            const translateX = width / 2 - graphCenterX * scale;
+            const translateY = height / 2 - graphCenterY * scale;
+
             svg.transition().duration(750).call(
                 zoom.transform,
-                d3.zoomIdentity.translate(width / 2, height / 2).scale(1)
+                d3.zoomIdentity.translate(translateX, translateY).scale(scale)
             );
         }
 
@@ -730,36 +897,11 @@
             const currentIndex = layouts.indexOf(currentLayout);
             currentLayout = layouts[(currentIndex + 1) % layouts.length];
 
-            const layoutNames = {
-                'LR': 'Left to Right',
-                'RL': 'Right to Left',
-                'TB': 'Top to Bottom',
-                'BT': 'Bottom to Top'
-            };
-            document.getElementById('layoutMode').textContent = layoutNames[currentLayout];
+            document.getElementById('layoutMode').textContent = currentLayout;
 
             const width = window.innerWidth;
             const height = window.innerHeight;
             applyLayoutForces(simulation, width, height);
-        }
-
-        function toggleControls() {
-            const controls = document.getElementById('controls');
-            const info = document.getElementById('info');
-            const legend = document.getElementById('legend');
-            const button = event.target;
-
-            if (controls.style.display === 'none') {
-                controls.style.display = 'block';
-                info.style.display = 'block';
-                legend.style.display = 'block';
-                button.textContent = 'Hide Controls';
-            } else {
-                controls.style.display = 'none';
-                info.style.display = 'none';
-                legend.style.display = 'none';
-                button.textContent = 'Show Controls';
-            }
         }
 
         function showError(message) {
@@ -805,7 +947,8 @@
                         fullPath: node.id, // Store full path for tooltip
                         label: displayName,
                         type: node.type || "class",
-                        highlighted: (node.highlight || 0) > 0 // Convert int to boolean
+                        highlighted: (node.highlight || 0) > 0, // Convert int to boolean
+                        highlightGroup: node.highlight || 0 // Store the highlight group number
                     };
 
                     const metadata = node.metadata || {};
@@ -833,10 +976,10 @@
                         const brief = metadata.brief_summary || "";
                         const doc = metadata.full_documentation || "";
 
-                        d3Node.methods = [{
-                            visibility: "public",
-                            definition: `(${params.join(', ')}) -> ${returns}`
-                        }];
+                        // Store function signature with name
+                        d3Node.signature = `${displayName}(${params.join(', ')}) → ${returns}`;
+                        d3Node.parameters = params;
+                        d3Node.returns = returns;
 
                         if (brief) d3Node.brief = brief;
                         if (doc) d3Node.documentation = doc;
@@ -876,7 +1019,8 @@
                         target: edge.target,
                         type: edgeTypeMap[edge.type] || edge.type || "uses",
                         label: edge.label || edge.type || "",
-                        highlighted: (edge.highlight || 0) > 0 // Convert int to boolean
+                        highlighted: (edge.highlight || 0) > 0, // Convert int to boolean
+                        highlightGroup: edge.highlight || 0 // Store the highlight group number
                     });
                 });
             }
@@ -894,18 +1038,6 @@
                 console.error(error);
             }
         }
-
-        // File input handler
-        document.getElementById('fileInput').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    loadJSON(e.target.result);
-                };
-                reader.readAsText(file);
-            }
-        });
 
         // Drag and drop support
         document.body.addEventListener('dragover', (e) => {
