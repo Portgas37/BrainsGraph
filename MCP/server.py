@@ -115,7 +115,8 @@ def add_nodes(node_list: list[dict[str, Any]]) -> str:
 
     Args:
         node_list: List of nodes to add. Each node should have:
-            - id (str): Unique identifier for the node (use full path for files to avoid clashes)
+            - id (str): Unique identifier for the node (use full path for files to avoid clashes).
+            If this is a class or function use path::name where name is the name of the class/function.
             - type (str): Node type - "class", "function", or "file"
             - metadata (dict): Type-specific metadata:
                 - class: {"functions": [...], "attributes": [...], "children": [...]}
