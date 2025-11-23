@@ -690,7 +690,7 @@
       "target": "/Users/momo/epfl/ai_team/GESTURE/V1_2/TGCN/models/TGCN/tgcn_model.py#GraphConvolution_att",
       "type": "contains",
       "id": "edge_24",
-      "highlight": 0
+      "highlight": 5
     },
     {
       "source": "/Users/momo/epfl/ai_team/GESTURE/V1_2/TGCN/models/TGCN/tgcn_model.py",

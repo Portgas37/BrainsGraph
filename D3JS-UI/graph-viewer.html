@@ -348,6 +348,25 @@
             <div style="font-size: 13px; color: #444; font-weight: 500;">Highlighted Path</div>
         </div>
     </div>
+    <div style="margin-bottom: 12px; padding-top: 12px; border-top: 2px solid #ddd;">
+        <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">Edge Types:</div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+            <div style="width: 40px; height: 3px; background: #666;"></div>
+            <div style="font-size: 12px; color: #444;">Contains</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+            <svg width="40" height="3"><line x1="0" y1="1.5" x2="40" y2="1.5" stroke="#aaa" stroke-width="2" stroke-dasharray="5,5"/></svg>
+            <div style="font-size: 12px; color: #444;">Uses</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+            <svg width="40" height="3"><line x1="0" y1="1.5" x2="40" y2="1.5" stroke="#888" stroke-width="2" stroke-dasharray="8,4"/></svg>
+            <div style="font-size: 12px; color: #444;">References</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 40px; height: 3px; background: #666;"></div>
+            <div style="font-size: 12px; color: #444;">Inherits</div>
+        </div>
+    </div>
     <div id="colorGroupsLegend" style="margin-top: 12px;">
         <!-- Dynamically populated based on active groups -->
     </div>
@@ -431,7 +450,7 @@
             defs.append("marker")
                 .attr("id", `arrow-${type}`)
                 .attr("viewBox", "0 -5 10 10")
-                .attr("refX", 25)
+                .attr("refX", 55)
                 .attr("refY", 0)
                 .attr("markerWidth", 6)
                 .attr("markerHeight", 6)
@@ -453,7 +472,7 @@
                     defs.append("marker")
                         .attr("id", `arrow-${type}-highlight-${i}`)
                         .attr("viewBox", "0 -5 10 10")
-                        .attr("refX", 25)
+                        .attr("refX", 55)
                         .attr("refY", 0)
                         .attr("markerWidth", 6)
                         .attr("markerHeight", 6)
@@ -538,10 +557,10 @@
         });
 
         simulation = d3.forceSimulation(nodes)
-            .force("link", d3.forceLink(links).id(d => d.id).distance(150))
-            .force("charge", d3.forceManyBody().strength(-600))
+            .force("link", d3.forceLink(links).id(d => d.id).distance(200))
+            .force("charge", d3.forceManyBody().strength(-800))
             .force("center", d3.forceCenter(width / 2, height / 2))
-            .force("collision", d3.forceCollide().radius(60));
+            .force("collision", d3.forceCollide().radius(75));
 
         applyLayoutForces(simulation, width, height);
 
@@ -566,19 +585,13 @@
                 return `url(#arrow-${type})`;
             });
 
-        // Create link labels
-        const linkLabel = g.append("g")
-            .selectAll("text")
-            .data(links.filter(d => d.label))
-            .join("text")
-            .attr("class", "link-label")
-            .text(d => d.label);
+        // Link labels removed - edge types shown in legend instead
 
         // Create nodes
         const node = g.append("g")
-            .selectAll("circle")
+            .selectAll("ellipse")
             .data(nodes)
-            .join("circle")
+            .join("ellipse")
             .attr("class", d => {
                 let classes = `node ${d.type || 'default'}`;
                 if (d.highlighted) {
@@ -587,7 +600,8 @@
                 }
                 return classes;
             })
-            .attr("r", 20)
+            .attr("rx", 50)
+            .attr("ry", 30)
             .on("mouseenter", showTooltip)
             .on("mousemove", moveTooltip)
             .on("mouseleave", hideTooltip)
@@ -603,33 +617,16 @@
             .join("text")
             .attr("class", "label")
             .text(d => {
-                const maxLength = 10;
+                const maxLength = 12;
                 return d.label.length > maxLength ? d.label.substring(0, maxLength) + '...' : d.label;
-            });
+            })
+            .style("font-size", "10px");
 
         // Update positions on tick
         simulation.on("tick", () => {
             link.attr("d", d => {
                 return `M${d.source.x},${d.source.y}L${d.target.x},${d.target.y}`;
             });
-
-            linkLabel
-                .attr("x", d => {
-                    const midX = (d.source.x + d.target.x) / 2;
-                    const dx = d.target.x - d.source.x;
-                    const dy = d.target.y - d.source.y;
-                    const length = Math.sqrt(dx * dx + dy * dy);
-                    const offsetX = -dy / length * 15;
-                    return midX + offsetX;
-                })
-                .attr("y", d => {
-                    const midY = (d.source.y + d.target.y) / 2;
-                    const dx = d.target.x - d.source.x;
-                    const dy = d.target.y - d.source.y;
-                    const length = Math.sqrt(dx * dx + dy * dy);
-                    const offsetY = dx / length * 15;
-                    return midY + offsetY;
-                });
 
             node
                 .attr("cx", d => d.x)
@@ -940,6 +937,9 @@
                 } else if (node.id.includes("::")) {
                     // For qualified names like "File::function", show just the function name
                     displayName = node.id.split("::").pop();
+                } else if (node.id.includes(":") && node.type !== "file") {
+                    // For qualified names with single colon like "file.py:ClassName"
+                    displayName = node.id.split(":").pop();
                 } else {
                     // For other types, show the full name
                     displayName = node.id;
