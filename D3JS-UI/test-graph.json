@@ -1,186 +1,717 @@
 {
-  "graphType": "classDiagram",
   "nodes": [
     {
-      "id": "User",
-      "label": "User",
-      "type": "class",
-      "attributes": [
-        {"visibility": "private", "definition": "string username"},
-        {"visibility": "private", "definition": "string email"},
-        {"visibility": "private", "definition": "string password"}
-      ],
-      "methods": [
-        {"visibility": "public", "definition": "login() bool"},
-        {"visibility": "public", "definition": "logout() void"},
-        {"visibility": "private", "definition": "validatePassword() bool"}
-      ],
-      "highlighted": true
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py",
+      "type": "file",
+      "metadata": {
+        "classes": [
+          "TemporalAugmentation",
+          "SpatialAugmentation",
+          "AugmentationPipeline"
+        ],
+        "functions": []
+      },
+      "highlight": 0
     },
     {
-      "id": "Database",
-      "label": "Database",
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py:TemporalAugmentation",
       "type": "class",
-      "attributes": [
-        {"visibility": "private", "definition": "Connection conn"},
-        {"visibility": "private", "definition": "string host"}
-      ],
-      "methods": [
-        {"visibility": "public", "definition": "connect() bool"},
-        {"visibility": "public", "definition": "query(sql) Result"},
-        {"visibility": "public", "definition": "close() void"}
-      ],
-      "highlighted": true
+      "metadata": {
+        "functions": [],
+        "attributes": [],
+        "children": [],
+        "brief_summary": "Applies temporal augmentations to sequences (frame dropout, cropping, speed changes).",
+        "full_documentation": "Temporal augmentation utilities for sequence-level transformations used before model training."
+      },
+      "highlight": 0
     },
     {
-      "id": "AuthService",
-      "label": "AuthService",
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py:SpatialAugmentation",
       "type": "class",
-      "attributes": [
-        {"visibility": "private", "definition": "TokenManager tokens"}
-      ],
-      "methods": [
-        {"visibility": "public", "definition": "authenticate(user) Token"},
-        {"visibility": "public", "definition": "verify(token) bool"}
-      ],
-      "highlighted": true
+      "metadata": {
+        "functions": [],
+        "attributes": [],
+        "children": [],
+        "brief_summary": "Applies spatial augmentations to skeleton/keypoint frames (jitter, scaling, rotation).",
+        "full_documentation": "Spatial augmentation operations to perturb spatial coordinates of landmarks for robustness."
+      },
+      "highlight": 0
     },
     {
-      "id": "Session",
-      "label": "Session",
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py:AugmentationPipeline",
       "type": "class",
-      "attributes": [
-        {"visibility": "private", "definition": "string sessionId"},
-        {"visibility": "private", "definition": "User user"},
-        {"visibility": "private", "definition": "datetime expiry"}
-      ],
-      "methods": [
-        {"visibility": "public", "definition": "isValid() bool"},
-        {"visibility": "public", "definition": "refresh() void"}
-      ],
-      "highlighted": false
+      "metadata": {
+        "functions": [],
+        "attributes": [],
+        "children": [],
+        "brief_summary": "Combines multiple augmentation transforms into a pipeline applied to datasets.",
+        "full_documentation": "Pipeline class that composes temporal and spatial augmentation transforms and applies them to input samples."
+      },
+      "highlight": 0
     },
     {
-      "id": "Logger",
-      "label": "Logger",
-      "type": "class",
-      "attributes": [
-        {"visibility": "private", "definition": "string logFile"}
-      ],
-      "methods": [
-        {"visibility": "public", "definition": "log(message) void"},
-        {"visibility": "public", "definition": "error(message) void"}
-      ],
-      "highlighted": true
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py",
+      "type": "file",
+      "metadata": {
+        "classes": [
+          "TimeBlock",
+          "STGCNBlock",
+          "STGCN"
+        ],
+        "functions": []
+      },
+      "highlight": 0
     },
     {
-      "id": "Cache",
-      "label": "Cache",
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py:TimeBlock",
       "type": "class",
-      "attributes": [
-        {"visibility": "private", "definition": "Map<string, Object> data"}
-      ],
-      "methods": [
-        {"visibility": "public", "definition": "get(key) Object"},
-        {"visibility": "public", "definition": "set(key, value) void"},
-        {"visibility": "public", "definition": "clear() void"}
-      ],
-      "highlighted": false
+      "metadata": {
+        "functions": [],
+        "attributes": [],
+        "children": [],
+        "brief_summary": "Temporal convolution block used inside ST-GCN model.",
+        "full_documentation": "Implements temporal convolutions and activations forming a basic building block for spatio-temporal graph convolution networks."
+      },
+      "highlight": 0
     },
     {
-      "id": "Validator",
-      "label": "Validator",
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py:STGCNBlock",
       "type": "class",
-      "methods": [
-        {"visibility": "public", "definition": "validateEmail(email) bool"},
-        {"visibility": "public", "definition": "validatePassword(pwd) bool"}
-      ],
-      "highlighted": true
+      "metadata": {
+        "functions": [],
+        "attributes": [],
+        "children": [],
+        "brief_summary": "Spatio-temporal GCN block combining spatial graph conv and temporal conv.",
+        "full_documentation": "Block that alternates spatial graph convolution with temporal convolution and normalization layers."
+      },
+      "highlight": 0
     },
     {
-      "id": "Config",
-      "label": "Config",
-      "type": "enum",
-      "stereotype": "enumeration",
-      "members": [
-        "DB_HOST",
-        "DB_PORT",
-        "API_KEY",
-        "MAX_SESSIONS"
-      ],
-      "highlighted": false
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py:STGCN",
+      "type": "class",
+      "metadata": {
+        "functions": [],
+        "attributes": [],
+        "children": [],
+        "brief_summary": "Full ST-GCN model for gesture recognition from skeleton sequences.",
+        "full_documentation": "Neural network combining multiple STGCNBlocks to produce class predictions from temporal sequences of landmarks."
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_loading/parquet_data_loader.py",
+      "type": "file",
+      "metadata": {
+        "classes": [
+          "UnifiedSkeletonDataset"
+        ],
+        "functions": []
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_loading/parquet_data_loader.py:UnifiedSkeletonDataset",
+      "type": "class",
+      "metadata": {
+        "functions": [],
+        "attributes": [],
+        "children": [],
+        "brief_summary": "Dataset reading preprocessed parquet files and returning batched tensors.",
+        "full_documentation": "Dataset class that loads skeleton/keypoint sequences from parquet files and yields samples for training and evaluation."
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_loading/utils/pose_utils.py",
+      "type": "file",
+      "metadata": {
+        "classes": [
+          "Landmark",
+          "LandmarkList",
+          "Pose"
+        ],
+        "functions": [
+          "unify_normalized_landmarks_to_shoulder_center",
+          "build_adjacency_matrix_from_connections",
+          "build_unified_adjacency_matrix"
+        ]
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_loading/utils/pose_utils.py:Landmark",
+      "type": "class",
+      "metadata": {
+        "functions": [],
+        "attributes": [
+          "x",
+          "y",
+          "z",
+          "visibility"
+        ],
+        "children": [],
+        "brief_summary": "Represents a single landmark coordinate with visibility.",
+        "full_documentation": "Simple container for a landmark's 3D coordinates and visibility/confidence value."
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_loading/utils/pose_utils.py:LandmarkList",
+      "type": "class",
+      "metadata": {
+        "functions": [],
+        "attributes": [],
+        "children": [],
+        "brief_summary": "Collection of landmarks (e.g., hand, pose or face set).",
+        "full_documentation": "Wrapper around a list of `Landmark` to provide utility accessors and conversions."
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_loading/utils/pose_utils.py:Pose",
+      "type": "class",
+      "metadata": {
+        "functions": [],
+        "attributes": [],
+        "children": [],
+        "brief_summary": "Holds pose, hand and face landmark groups for a frame.",
+        "full_documentation": "Aggregate object containing normalized landmarks for the full body and face/hands when available."
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_preprocessing/video_preprocessor.py",
+      "type": "file",
+      "metadata": {
+        "classes": [
+          "VideoPreprocessor"
+        ],
+        "functions": []
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_preprocessing/video_preprocessor.py:VideoPreprocessor",
+      "type": "class",
+      "metadata": {
+        "functions": [],
+        "attributes": [],
+        "children": [],
+        "brief_summary": "Tools to preprocess video into landmark sequences and save outputs.",
+        "full_documentation": "Handles frame extraction, landmark detection calls, and saves processed data in required format for training pipelines."
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/utils/config_loader.py",
+      "type": "file",
+      "metadata": {
+        "classes": [
+          "Config"
+        ],
+        "functions": [
+          "load_config",
+          "save_config"
+        ]
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/utils/config_loader.py:Config",
+      "type": "class",
+      "metadata": {
+        "functions": [],
+        "attributes": [],
+        "children": [],
+        "brief_summary": "Typed config container for CV experiments.",
+        "full_documentation": "Dataclass-like object holding model, training and data parameters loaded from YAML/JSON."
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/main.py",
+      "type": "file",
+      "metadata": {
+        "classes": [],
+        "functions": [
+          "train"
+        ]
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/main.py:train",
+      "type": "function",
+      "metadata": {
+        "parameters": [
+          "model",
+          "train_loader",
+          "val_loader",
+          "num_epochs",
+          "learning_rate",
+          "device",
+          "num_nodes",
+          "config",
+          "run_id=None",
+          "gloss_map=None"
+        ],
+        "returns": "None",
+        "brief_summary": "Training loop for CV models (ST-GCN).",
+        "full_documentation": "Trains a provided model using the dataset loaders, runs validation and optionally saves checkpoints."
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/V1_2/TGCN/models/TGCN/tgcn_model.py",
+      "type": "file",
+      "metadata": {
+        "classes": [
+          "GraphConvolution_att",
+          "GC_Block",
+          "GCN_muti_att",
+          "GCN_muti_att_Model"
+        ],
+        "functions": []
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/V1_2/TGCN/models/GAT/gat_model.py",
+      "type": "file",
+      "metadata": {
+        "classes": [
+          "GraphAttentionLayer",
+          "MultiHeadDynamicGAT",
+          "TemporalAttention",
+          "GatingFusion",
+          "DynamicGATTemporalModel",
+          "DynamicGATTemporalModelWithHandEmphasis"
+        ],
+        "functions": []
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/NLP/GlossaBART/GlossaBart_traduction.py",
+      "type": "file",
+      "metadata": {
+        "classes": [],
+        "functions": [
+          "load_model",
+          "translate_gloss",
+          "main"
+        ]
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/NLP/GlossaBART/GlossaBart_traduction.py:load_model",
+      "type": "function",
+      "metadata": {
+        "parameters": [
+          "model_name:str = DEFAULT_MODEL"
+        ],
+        "returns": "model object",
+        "brief_summary": "Loads the GlossaBART model and tokenizer.",
+        "full_documentation": "Utility to load pretrained model and tokenizer for gloss-to-text translation tasks."
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/NLP/GlossaBART/GlossaBart_traduction.py:translate_gloss",
+      "type": "function",
+      "metadata": {
+        "parameters": [
+          "gloss_sentence:str",
+          "tokenizer",
+          "model",
+          "device:str = 'cpu'"
+        ],
+        "returns": "str",
+        "brief_summary": "Translates a gloss sentence using the loaded model and tokenizer.",
+        "full_documentation": "Runs tokenization and model generation to produce a translated sentence from a gloss input."
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py#TemporalAugmentation",
+      "type": "class",
+      "metadata": {
+        "functions": [
+          "random_resample",
+          "random_masking"
+        ],
+        "attributes": [],
+        "children": [],
+        "brief_summary": "Temporal augmentation utilities for landmark sequences."
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py#SpatialAugmentation",
+      "type": "class",
+      "metadata": {
+        "functions": [
+          "horizontal_flip",
+          "random_affine",
+          "random_cutout"
+        ],
+        "attributes": [],
+        "children": [],
+        "brief_summary": "Spatial augmentations for landmark coordinates."
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py#AugmentationPipeline",
+      "type": "class",
+      "metadata": {
+        "functions": [
+          "__init__",
+          "__call__"
+        ],
+        "attributes": [
+          "temporal_aug_prob",
+          "spatial_aug_prob"
+        ],
+        "children": [],
+        "brief_summary": "Combines temporal and spatial augmentations into a callable pipeline."
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py#TimeBlock",
+      "type": "class",
+      "metadata": {
+        "functions": [
+          "__init__",
+          "forward"
+        ],
+        "attributes": [
+          "conv",
+          "conv_2",
+          "out_channels"
+        ],
+        "children": [],
+        "brief_summary": "Temporal convolution block used by ST-GCN."
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py#STGCNBlock",
+      "type": "class",
+      "metadata": {
+        "functions": [
+          "__init__",
+          "reset_parameters",
+          "forward"
+        ],
+        "attributes": [
+          "temp_block_1",
+          "Theta",
+          "temp_block_2",
+          "batch_norm"
+        ],
+        "children": [],
+        "brief_summary": "Spatial-temporal GCN block combining temporal conv and graph conv."
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py#STGCN",
+      "type": "class",
+      "metadata": {
+        "functions": [
+          "__init__",
+          "forward"
+        ],
+        "attributes": [
+          "blocks",
+          "head_temporal",
+          "classifier"
+        ],
+        "children": [],
+        "brief_summary": "Full ST-GCN model composed of multiple STGCNBlock modules."
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/V1_2/TGCN/models/TGCN/tgcn_model.py#GraphConvolution_att",
+      "type": "class",
+      "metadata": {
+        "functions": [
+          "__init__",
+          "reset_parameters",
+          "forward",
+          "__repr__"
+        ],
+        "attributes": [
+          "weight",
+          "att",
+          "bias"
+        ],
+        "children": [],
+        "brief_summary": "Graph convolution layer with an attention (support) matrix."
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/V1_2/TGCN/models/TGCN/tgcn_model.py#GC_Block",
+      "type": "class",
+      "metadata": {
+        "functions": [
+          "__init__",
+          "forward",
+          "__repr__"
+        ],
+        "attributes": [
+          "gc1",
+          "bn1",
+          "gc2",
+          "bn2",
+          "do",
+          "act_f"
+        ],
+        "children": [],
+        "brief_summary": "Block wrapping two GraphConvolution_att layers with normalization and dropout."
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/V1_2/TGCN/models/TGCN/tgcn_model.py#GCN_muti_att",
+      "type": "class",
+      "metadata": {
+        "functions": [
+          "__init__",
+          "forward"
+        ],
+        "attributes": [
+          "gc1",
+          "bn1",
+          "gcbs",
+          "fc_out"
+        ],
+        "children": [],
+        "brief_summary": "Multi-stage GCN that stacks GC_Block modules and outputs class logits."
+      },
+      "highlight": 0
+    },
+    {
+      "id": "/Users/momo/epfl/ai_team/GESTURE/V1_2/TGCN/models/TGCN/tgcn_model.py#GCN_muti_att_Model",
+      "type": "class",
+      "metadata": {
+        "functions": [
+          "__init__",
+          "forward"
+        ],
+        "attributes": [
+          "gc1",
+          "bn1",
+          "gc_blocks",
+          "fc_out"
+        ],
+        "children": [],
+        "brief_summary": "Wrapper model with configurable pooling and multiple GC_Block stages."
+      },
+      "highlight": 0
     }
   ],
   "edges": [
     {
-      "source": "User",
-      "target": "Database",
-      "type": "uses",
-      "label": "queries",
-      "highlighted": true
-    },
-    {
-      "source": "User",
-      "target": "AuthService",
-      "type": "uses",
-      "label": "authenticates with",
-      "highlighted": false
-    },
-    {
-      "source": "User",
-      "target": "Validator",
-      "type": "uses",
-      "label": "validates data",
-      "highlighted": true
-    },
-    {
-      "source": "AuthService",
-      "target": "Database",
-      "type": "uses",
-      "label": "stores tokens",
-      "highlighted": false
-    },
-    {
-      "source": "AuthService",
-      "target": "Session",
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py:TemporalAugmentation",
       "type": "contains",
-      "label": "creates",
-      "highlighted": false
+      "id": "edge_0",
+      "highlight": 0
     },
     {
-      "source": "Session",
-      "target": "User",
-      "type": "references",
-      "label": "belongs to",
-      "highlighted": false
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py:SpatialAugmentation",
+      "type": "contains",
+      "id": "edge_1",
+      "highlight": 0
     },
     {
-      "source": "Database",
-      "target": "Logger",
-      "type": "uses",
-      "label": "logs queries",
-      "highlighted": false
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py:AugmentationPipeline",
+      "type": "contains",
+      "id": "edge_2",
+      "highlight": 0
     },
     {
-      "source": "Database",
-      "target": "Cache",
-      "type": "uses",
-      "label": "caches results",
-      "highlighted": false
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py:TimeBlock",
+      "type": "contains",
+      "id": "edge_3",
+      "highlight": 0
     },
     {
-      "source": "Database",
-      "target": "Config",
-      "type": "uses",
-      "label": "reads config",
-      "highlighted": false
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py:STGCNBlock",
+      "type": "contains",
+      "id": "edge_4",
+      "highlight": 0
     },
     {
-      "source": "AuthService",
-      "target": "Logger",
-      "type": "uses",
-      "label": "logs auth events",
-      "highlighted": false
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py:STGCN",
+      "type": "contains",
+      "id": "edge_5",
+      "highlight": 0
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_loading/parquet_data_loader.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_loading/parquet_data_loader.py:UnifiedSkeletonDataset",
+      "type": "contains",
+      "id": "edge_6",
+      "highlight": 0
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_loading/utils/pose_utils.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_loading/utils/pose_utils.py:Landmark",
+      "type": "contains",
+      "id": "edge_7",
+      "highlight": 0
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_loading/utils/pose_utils.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_loading/utils/pose_utils.py:LandmarkList",
+      "type": "contains",
+      "id": "edge_8",
+      "highlight": 0
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_loading/utils/pose_utils.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_loading/utils/pose_utils.py:Pose",
+      "type": "contains",
+      "id": "edge_9",
+      "highlight": 0
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_preprocessing/video_preprocessor.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_preprocessing/video_preprocessor.py:VideoPreprocessor",
+      "type": "contains",
+      "id": "edge_10",
+      "highlight": 0
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/utils/config_loader.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/utils/config_loader.py:Config",
+      "type": "contains",
+      "id": "edge_11",
+      "highlight": 0
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/main.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/main.py:train",
+      "type": "contains",
+      "id": "edge_12",
+      "highlight": 0
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/main.py:train",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py:STGCN",
+      "type": "invokes",
+      "id": "edge_13",
+      "highlight": 0
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py#TemporalAugmentation",
+      "type": "contains",
+      "id": "edge_14",
+      "highlight": 0
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py#SpatialAugmentation",
+      "type": "contains",
+      "id": "edge_15",
+      "highlight": 0
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py#AugmentationPipeline",
+      "type": "contains",
+      "id": "edge_16",
+      "highlight": 0
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py#AugmentationPipeline",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py#TemporalAugmentation",
+      "type": "invokes",
+      "id": "edge_17",
+      "highlight": 0
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py#AugmentationPipeline",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/data_augmentation/augmentations.py#SpatialAugmentation",
+      "type": "invokes",
+      "id": "edge_18",
+      "highlight": 0
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py#TimeBlock",
+      "type": "contains",
+      "id": "edge_19",
+      "highlight": 0
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py#STGCNBlock",
+      "type": "contains",
+      "id": "edge_20",
+      "highlight": 0
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py#STGCN",
+      "type": "contains",
+      "id": "edge_21",
+      "highlight": 0
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py#STGCN",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py#STGCNBlock",
+      "type": "contains",
+      "id": "edge_22",
+      "highlight": 0
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py#STGCNBlock",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/fall_2025/CV/src/models/stgcn.py#TimeBlock",
+      "type": "contains",
+      "id": "edge_23",
+      "highlight": 0
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/V1_2/TGCN/models/TGCN/tgcn_model.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/V1_2/TGCN/models/TGCN/tgcn_model.py#GraphConvolution_att",
+      "type": "contains",
+      "id": "edge_24",
+      "highlight": 5
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/V1_2/TGCN/models/TGCN/tgcn_model.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/V1_2/TGCN/models/TGCN/tgcn_model.py#GC_Block",
+      "type": "contains",
+      "id": "edge_25",
+      "highlight": 0
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/V1_2/TGCN/models/TGCN/tgcn_model.py",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/V1_2/TGCN/models/TGCN/tgcn_model.py#GCN_muti_att",
+      "type": "contains",
+      "id": "edge_26",
+      "highlight": 0
+    },
+    {
+      "source": "/Users/momo/epfl/ai_team/GESTURE/V1_2/TGCN/models/TGCN/tgcn_model.py#GCN_muti_att",
+      "target": "/Users/momo/epfl/ai_team/GESTURE/V1_2/TGCN/models/TGCN/tgcn_model.py#GC_Block",
+      "type": "contains",
+      "id": "edge_27",
+      "highlight": 0
     }
   ]
 }

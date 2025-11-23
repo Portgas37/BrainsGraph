@@ -2,9 +2,8 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>JSON Graph Viewer - Tree Layout</title>
+    <title>JSON Graph Viewer</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dagre/0.8.5/dagre.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -19,19 +18,22 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+            color: #2c3e50;
         }
 
         #controls {
             position: fixed;
-            top: 10px;
-            left: 10px;
+            top: 20px;
+            left: 20px;
             background: rgba(255, 255, 255, 0.95);
-            padding: 10px;
-            border-radius: 6px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
             z-index: 1000;
             max-width: 280px;
             font-size: 11px;
@@ -43,26 +45,28 @@
         }
 
         button {
-            padding: 6px 10px;
-            background: #666;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #5e72e4 0%, #825ee4 100%);
             border: none;
-            border-radius: 3px;
+            border-radius: 10px;
             color: white;
             cursor: pointer;
-            font-size: 11px;
-            font-weight: 500;
-            transition: all 0.2s;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(94, 114, 228, 0.25);
         }
 
         button:hover {
-            background: #555;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(94, 114, 228, 0.4);
         }
 
         button:active {
-            background: #444;
+            transform: translateY(0);
         }
 
         .icon-btn {
@@ -84,115 +88,170 @@
             height: 100%;
         }
 
-        /* --- NODE STYLES (RECTANGLES) --- */
         .node {
             cursor: pointer;
-        }
-
-        .node rect {
-            stroke: #666;
+            stroke: #5e72e4;
             stroke-width: 2px;
-            fill: #ffffff;
-            rx: 6px; /* Rounded corners */
-            ry: 6px;
-            transition: all 0.2s;
-            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1));
+            fill: rgba(255, 255, 255, 0.95);
+            transition: all 0.3s ease;
+            rx: 12;
+            ry: 12;
         }
 
-        .node:hover rect {
-            fill: #f0f0f0;
-            stroke: #333;
-            stroke-width: 3px;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+        .node.enum {
+            fill: rgba(255, 255, 255, 0.95);
+            stroke: #e056fd;
         }
 
-        /* Types */
-        .node.enum rect { fill: #f0f0f0; stroke: #888; }
-        .node.interface rect { stroke-dasharray: 4,2; fill: #fafafa; }
-        .node.abstract rect { stroke-dasharray: 6,3; fill: #f5f5f5; }
+        .node.interface {
+            fill: rgba(255, 255, 255, 0.95);
+            stroke: #11cdef;
+            stroke-dasharray: 4,2;
+        }
 
-        /* Highlight styles applied to the rect */
-        .node.highlighted rect { stroke-width: 3px !important; }
-        
-        .node.highlight-1 rect { fill: #ffd93d !important; stroke: #ff6b6b !important; }
-        .node.highlight-2 rect { fill: #a8e6cf !important; stroke: #3cb371 !important; }
-        .node.highlight-3 rect { fill: #ff9ff3 !important; stroke: #da70d6 !important; }
-        .node.highlight-4 rect { fill: #feca57 !important; stroke: #ee5a24 !important; }
-        .node.highlight-5 rect { fill: #48dbfb !important; stroke: #0abde3 !important; }
-        .node.highlight-6 rect { fill: #ff6348 !important; stroke: #e74c3c !important; }
-        .node.highlight-7 rect { fill: #dfe6e9 !important; stroke: #636e72 !important; }
-        .node.highlight-8 rect { fill: #a29bfe !important; stroke: #6c5ce7 !important; }
-        .node.highlight-9 rect { fill: #fd79a8 !important; stroke: #e84393 !important; }
-        .node.highlight-10 rect { fill: #00b894 !important; stroke: #00cec9 !important; }
+        .node.abstract {
+            fill: rgba(255, 255, 255, 0.95);
+            stroke: #2dce89;
+            stroke-dasharray: 6,3;
+        }
+
+        .node:not(.highlighted):hover {
+            fill: rgba(94, 114, 228, 0.1);
+            stroke-width: 2.5px;
+            stroke: #5e72e4;
+        }
+
+        .node.highlighted {
+            stroke-width: 3px !important;
+            filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.9)) drop-shadow(0 0 25px rgba(255, 215, 0, 0.6)) !important;
+            animation: neon-pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes neon-pulse {
+            0%, 100% { 
+                filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.9)) drop-shadow(0 0 25px rgba(255, 215, 0, 0.6));
+            }
+            50% { 
+                filter: drop-shadow(0 0 20px rgba(255, 215, 0, 1)) drop-shadow(0 0 35px rgba(255, 215, 0, 0.8));
+            }
+        }
+
+        .node.highlight-1 { fill: rgba(255, 215, 0, 0.35) !important; stroke: #ffd700 !important; stroke-width: 3px !important; }
+        .node.highlight-2 { fill: rgba(255, 215, 0, 0.35) !important; stroke: #ffd700 !important; stroke-width: 3px !important; }
+        .node.highlight-3 { fill: rgba(255, 215, 0, 0.35) !important; stroke: #ffd700 !important; stroke-width: 3px !important; }
+        .node.highlight-4 { fill: rgba(255, 215, 0, 0.35) !important; stroke: #ffd700 !important; stroke-width: 3px !important; }
+        .node.highlight-5 { fill: rgba(255, 215, 0, 0.35) !important; stroke: #ffd700 !important; stroke-width: 3px !important; }
+        .node.highlight-6 { fill: rgba(255, 215, 0, 0.35) !important; stroke: #ffd700 !important; stroke-width: 3px !important; }
+        .node.highlight-7 { fill: rgba(255, 215, 0, 0.35) !important; stroke: #ffd700 !important; stroke-width: 3px !important; }
+        .node.highlight-8 { fill: rgba(255, 215, 0, 0.35) !important; stroke: #ffd700 !important; stroke-width: 3px !important; }
+        .node.highlight-9 { fill: rgba(255, 215, 0, 0.35) !important; stroke: #ffd700 !important; stroke-width: 3px !important; }
+        .node.highlight-10 { fill: rgba(255, 215, 0, 0.35) !important; stroke: #ffd700 !important; stroke-width: 3px !important; }
+
+        .node.highlighted:hover {
+            opacity: 0.8;
+        }
 
         .link {
             fill: none;
-            stroke: #999;
+            stroke: rgba(94, 114, 228, 0.5);
             stroke-width: 2px;
-            opacity: 0.6;
         }
 
-        .link.contains { stroke: #666; stroke-width: 2.5px; }
-        .link.uses { stroke: #aaa; stroke-dasharray: 5,5; }
-        .link.references { stroke: #888; stroke-dasharray: 8,4; }
-        .link.inherits { stroke: #666; stroke-width: 2px; }
+        .link.contains {
+            stroke: #825ee4;
+            stroke-width: 3px;
+        }
+
+        .link.uses {
+            stroke: #5e72e4;
+            stroke-dasharray: 8,4;
+        }
+
+        .link.references {
+            stroke: #f5365c;
+            stroke-dasharray: 10,5;
+        }
+
+        .link.inherits {
+            stroke: #11cdef;
+            stroke-width: 3.5px;
+        }
 
         .link.highlighted {
             stroke-width: 4px !important;
             opacity: 1;
+            filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.9)) drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
+            animation: link-pulse 1.5s ease-in-out infinite;
         }
 
-        /* Link Highlights */
-        .link.highlight-1 { stroke: #ff6b6b !important; }
-        .link.highlight-2 { stroke: #3cb371 !important; }
-        .link.highlight-3 { stroke: #da70d6 !important; }
-        .link.highlight-4 { stroke: #ee5a24 !important; }
-        .link.highlight-5 { stroke: #0abde3 !important; }
-        .link.highlight-6 { stroke: #e74c3c !important; }
-        .link.highlight-7 { stroke: #636e72 !important; }
-        .link.highlight-8 { stroke: #6c5ce7 !important; }
-        .link.highlight-9 { stroke: #e84393 !important; }
-        .link.highlight-10 { stroke: #00cec9 !important; }
+        @keyframes link-pulse {
+            0%, 100% { 
+                filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.9)) drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
+                opacity: 1;
+            }
+            50% { 
+                filter: drop-shadow(0 0 15px rgba(255, 215, 0, 1)) drop-shadow(0 0 25px rgba(255, 215, 0, 0.8));
+                opacity: 0.9;
+            }
+        }
+
+        .link.highlight-1 { stroke: #ffd700 !important; }
+        .link.highlight-2 { stroke: #ffd700 !important; }
+        .link.highlight-3 { stroke: #ffd700 !important; }
+        .link.highlight-4 { stroke: #ffd700 !important; }
+        .link.highlight-5 { stroke: #ffd700 !important; }
+        .link.highlight-6 { stroke: #ffd700 !important; }
+        .link.highlight-7 { stroke: #ffd700 !important; }
+        .link.highlight-8 { stroke: #ffd700 !important; }
+        .link.highlight-9 { stroke: #ffd700 !important; }
+        .link.highlight-10 { stroke: #ffd700 !important; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
 
         .label {
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 600;
             pointer-events: none;
             text-anchor: middle;
-            fill: #333;
+            fill: #2c3e50;
             user-select: none;
-            dominant-baseline: middle;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
         }
 
         .link-label {
-            font-size: 9px;
-            fill: #666;
+            font-size: 10px;
+            fill: #525f7f;
             pointer-events: none;
             user-select: none;
-            background: white;
+            filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.8));
         }
 
         .tooltip {
             position: fixed;
             background: rgba(255, 255, 255, 0.98);
-            border: 2px solid #666;
-            border-radius: 8px;
-            padding: 15px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 20px;
             pointer-events: none;
             z-index: 2000;
             max-width: 500px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
             font-size: 13px;
             line-height: 1.5;
         }
 
         .tooltip-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 8px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #ddd;
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(94, 114, 228, 0.2);
         }
 
         .tooltip-stereotype {
@@ -202,7 +261,10 @@
             margin-bottom: 5px;
         }
 
-        .tooltip-section { margin-top: 10px; }
+        .tooltip-section {
+            margin-top: 10px;
+        }
+
         .tooltip-section-title {
             font-weight: 600;
             color: #555;
@@ -220,62 +282,92 @@
             padding-left: 10px;
         }
 
-        .tooltip-member.function, .tooltip-member.method { color: #2d7a3e; }
-        .tooltip-member.private { color: #c53030; }
-        .tooltip-member.public { color: #2d7a3e; }
-        .tooltip-member.protected { color: #b7791f; }
+        .tooltip-member.function,
+        .tooltip-member.method {
+            color: #2d7a3e;
+        }
+
+        .tooltip-member.private {
+            color: #c53030;
+        }
+
+        .tooltip-member.public {
+            color: #2d7a3e;
+        }
+
+        .tooltip-member.protected {
+            color: #b7791f;
+        }
 
         #info {
             position: fixed;
-            bottom: 20px;
-            left: 20px;
+            bottom: 30px;
+            left: 30px;
             background: rgba(255, 255, 255, 0.95);
-            padding: 20px 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 24px 28px;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
             z-index: 1000;
             font-size: 15px;
-            color: #666;
-            min-width: 300px;
+            color: #2c3e50;
+            min-width: 320px;
             line-height: 1.6;
         }
 
         #legend {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 30px;
+            right: 30px;
             background: rgba(255, 255, 255, 0.95);
-            padding: 20px 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 24px 28px;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
             z-index: 1000;
             font-size: 13px;
-            max-width: 350px;
+            max-width: 380px;
             line-height: 1.6;
         }
 
-        .error { color: #d32f2f; font-weight: 500; margin-top: 10px; }
+        .error {
+            color: #d32f2f;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
 
         .highlight-badge {
             display: inline-block;
-            background: #ff6b6b;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 10px;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
             margin-left: 8px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            animation: badge-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes badge-pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6); }
         }
     </style>
 </head>
 <body>
 <div id="controls">
     <div class="button-group">
-        <button class="icon-btn" onclick="renderGraph(currentData)" title="Reset Layout">🔄</button>
+        <button class="icon-btn" onclick="resetSimulation()" title="Reset Layout">🔄</button>
         <button class="icon-btn" onclick="centerGraph()" title="Center">🎯</button>
-        <button class="icon-btn" onclick="changeLayout()" title="Change Direction">↔️</button>
     </div>
-    <div style="margin-top: 8px; font-size: 11px; color: #666; font-weight: 600;">
-        <span id="layoutMode">LR</span>
+    <div style="margin-top: 8px; font-size: 11px; color: #2c3e50; font-weight: 600;">
+        Tree Layout (Top to Bottom)
     </div>
     <div id="error"></div>
 </div>
@@ -286,43 +378,44 @@
 </div>
 
 <div id="legend">
-    <h3 style="margin: 0 0 12px 0; font-size: 15px; color: #333; border-bottom: 2px solid #ddd; padding-bottom: 8px; font-weight: bold;">
+    <h3 style="margin: 0 0 12px 0; font-size: 15px; color: #2c3e50; border-bottom: 2px solid rgba(94, 114, 228, 0.2); padding-bottom: 8px; font-weight: bold;">
         Legend
     </h3>
     <div style="margin-bottom: 12px;">
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-            <div style="width: 20px; height: 20px; background: #ffd93d; border: 3px solid #ff6b6b; border-radius: 4px;"></div>
-            <div style="font-size: 13px; color: #444; font-weight: 500;">Highlighted Node</div>
+            <div style="width: 20px; height: 20px; background: rgba(255, 215, 0, 0.35); border: 2px solid #ffd700; border-radius: 4px; box-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 25px rgba(255, 215, 0, 0.4);"></div>
+            <div style="font-size: 13px; color: #2c3e50; font-weight: 500;">Highlighted Node</div>
         </div>
         <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 40px; height: 4px; background: #ff6b6b; box-shadow: 0 0 6px rgba(255,107,107,0.8);"></div>
-            <div style="font-size: 13px; color: #444; font-weight: 500;">Highlighted Path</div>
+            <div style="width: 40px; height: 4px; background: #ffd700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.5);"></div>
+            <div style="font-size: 13px; color: #2c3e50; font-weight: 500;">Highlighted Path</div>
         </div>
     </div>
-    <div id="colorGroupsLegend" style="margin-top: 12px;"></div>
+    <div id="colorGroupsLegend" style="margin-top: 12px;">
+        <!-- Dynamically populated based on active groups -->
+    </div>
 </div>
 
 <svg id="graph"></svg>
 
 <script>
-    // Global State
-    let svg, g, zoom;
+    // D3.js Visualization
+    let simulation, svg, g, zoom;
     let nodes = [], links = [];
-    let currentLayout = 'LR'; // Left-to-Right by default
-    let currentData = { nodes: [], edges: [] };
+    let currentLayout = 'TB';
 
-    // Highlight Colors Config
+    // Color mapping for highlight groups
     const highlightColors = {
-        1: { stroke: '#ff6b6b', fill: '#ffd93d' },
-        2: { stroke: '#3cb371', fill: '#a8e6cf' },
-        3: { stroke: '#da70d6', fill: '#ff9ff3' },
-        4: { stroke: '#ee5a24', fill: '#feca57' },
-        5: { stroke: '#0abde3', fill: '#48dbfb' },
-        6: { stroke: '#e74c3c', fill: '#ff6348' },
-        7: { stroke: '#636e72', fill: '#dfe6e9' },
-        8: { stroke: '#6c5ce7', fill: '#a29bfe' },
-        9: { stroke: '#e84393', fill: '#fd79a8' },
-        10: { stroke: '#00cec9', fill: '#00b894' }
+        1: { stroke: '#ffd700', fill: 'rgba(255, 215, 0, 0.35)', name: 'Yellow Neon' },
+        2: { stroke: '#ffd700', fill: 'rgba(255, 215, 0, 0.35)', name: 'Yellow Neon' },
+        3: { stroke: '#ffd700', fill: 'rgba(255, 215, 0, 0.35)', name: 'Yellow Neon' },
+        4: { stroke: '#ffd700', fill: 'rgba(255, 215, 0, 0.35)', name: 'Yellow Neon' },
+        5: { stroke: '#ffd700', fill: 'rgba(255, 215, 0, 0.35)', name: 'Yellow Neon' },
+        6: { stroke: '#ffd700', fill: 'rgba(255, 215, 0, 0.35)', name: 'Yellow Neon' },
+        7: { stroke: '#ffd700', fill: 'rgba(255, 215, 0, 0.35)', name: 'Yellow Neon' },
+        8: { stroke: '#ffd700', fill: 'rgba(255, 215, 0, 0.35)', name: 'Yellow Neon' },
+        9: { stroke: '#ffd700', fill: 'rgba(255, 215, 0, 0.35)', name: 'Yellow Neon' },
+        10: { stroke: '#ffd700', fill: 'rgba(255, 215, 0, 0.35)', name: 'Yellow Neon' }
     };
 
     function getHighlightColor(group) {
@@ -336,15 +429,15 @@
             return;
         }
 
-        let html = '<div style="font-size: 13px; font-weight: 600; margin-bottom: 8px; padding-top: 12px; border-top: 2px solid #ddd;">Color Groups:</div>';
+        let html = '<div style="font-size: 13px; font-weight: 600; margin-bottom: 8px; padding-top: 12px; border-top: 2px solid rgba(94, 114, 228, 0.2); color: #2c3e50;">Color Groups:</div>';
         html += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 12px;">';
 
         Array.from(activeGroups.keys()).sort((a, b) => a - b).forEach(group => {
             const color = highlightColors[group];
             if (color) {
                 html += `<div style="display: flex; align-items: center; gap: 6px;">
-                        <div style="width: 14px; height: 14px; background: ${color.stroke}; border-radius: 50%;"></div>
-                        <span style="font-weight: 500;">Group ${group}</span>
+                        <div style="width: 14px; height: 14px; background: ${color.stroke}; border-radius: 3px; box-shadow: 0 0 8px ${color.stroke}80;"></div>
+                        <span style="font-weight: 500; color: #2c3e50;">Group ${group}</span>
                     </div>`;
             }
         });
@@ -372,149 +465,277 @@
 
         svg.call(zoom);
 
-        // Define Arrow Markers
+        // Arrow markers - create for each type and each highlight group
         const defs = svg.append("defs");
+
+        // Add gradient definitions for nodes
+        const nodeGradient = defs.append("linearGradient")
+            .attr("id", "nodeGradient")
+            .attr("x1", "0%").attr("y1", "0%")
+            .attr("x2", "100%").attr("y2", "100%");
+        nodeGradient.append("stop").attr("offset", "0%").attr("stop-color", "#667eea");
+        nodeGradient.append("stop").attr("offset", "100%").attr("stop-color", "#764ba2");
+
+        const enumGradient = defs.append("linearGradient")
+            .attr("id", "enumGradient")
+            .attr("x1", "0%").attr("y1", "0%")
+            .attr("x2", "100%").attr("y2", "100%");
+        enumGradient.append("stop").attr("offset", "0%").attr("stop-color", "#f093fb");
+        enumGradient.append("stop").attr("offset", "100%").attr("stop-color", "#f5576c");
+
+        const interfaceGradient = defs.append("linearGradient")
+            .attr("id", "interfaceGradient")
+            .attr("x1", "0%").attr("y1", "0%")
+            .attr("x2", "100%").attr("y2", "100%");
+        interfaceGradient.append("stop").attr("offset", "0%").attr("stop-color", "#4facfe");
+        interfaceGradient.append("stop").attr("offset", "100%").attr("stop-color", "#00f2fe");
+
+        const abstractGradient = defs.append("linearGradient")
+            .attr("id", "abstractGradient")
+            .attr("x1", "0%").attr("y1", "0%")
+            .attr("x2", "100%").attr("y2", "100%");
+        abstractGradient.append("stop").attr("offset", "0%").attr("stop-color", "#43e97b");
+        abstractGradient.append("stop").attr("offset", "100%").attr("stop-color", "#38f9d7");
+
+        // Add highlight gradients
+        for (let i = 1; i <= 10; i++) {
+            const gradient = defs.append("linearGradient")
+                .attr("id", `highlight${i}`)
+                .attr("x1", "0%").attr("y1", "0%")
+                .attr("x2", "100%").attr("y2", "100%");
+            
+            const colors = {
+                1: ["#ff6b6b", "#ee5a24"],
+                2: ["#00ff88", "#00d2d3"],
+                3: ["#da70d6", "#ff6348"],
+                4: ["#ffa502", "#ff6348"],
+                5: ["#0abde3", "#48dbfb"],
+                6: ["#ff4757", "#ff6348"],
+                7: ["#747d8c", "#a4b0be"],
+                8: ["#5f27cd", "#a29bfe"],
+                9: ["#ff6348", "#fd79a8"],
+                10: ["#00d2d3", "#00b894"]
+            };
+            
+            gradient.append("stop").attr("offset", "0%").attr("stop-color", colors[i][0]);
+            gradient.append("stop").attr("offset", "100%").attr("stop-color", colors[i][1]);
+        }
+
+        // Default arrow markers
         const arrowTypes = ["default", "contains", "uses", "references", "inherits"];
-        
         arrowTypes.forEach(type => {
-            // Helper to create marker
-            const createMarker = (id, color) => {
+            defs.append("marker")
+                .attr("id", `arrow-${type}`)
+                .attr("viewBox", "0 -5 10 10")
+                .attr("refX", 50)
+                .attr("refY", 0)
+                .attr("markerWidth", 6)
+                .attr("markerHeight", 6)
+                .attr("orient", "auto")
+                .append("path")
+                .attr("d", "M0,-5L10,0L0,5")
+                .attr("fill", () => {
+                    if (type === "contains") return "rgba(118, 75, 162, 0.7)";
+                    if (type === "uses") return "rgba(102, 126, 234, 0.5)";
+                    if (type === "references") return "rgba(255, 107, 107, 0.5)";
+                    if (type === "inherits") return "rgba(0, 210, 211, 0.7)";
+                    return "rgba(102, 126, 234, 0.6)";
+                });
+
+            // Create colored markers for each highlight group
+            for (let i = 1; i <= 10; i++) {
                 defs.append("marker")
-                    .attr("id", id)
+                    .attr("id", `arrow-${type}-highlight-${i}`)
                     .attr("viewBox", "0 -5 10 10")
-                    .attr("refX", 9) // Adjusted for rectangles (puts arrow closer to box)
+                    .attr("refX", 50)
                     .attr("refY", 0)
                     .attr("markerWidth", 6)
                     .attr("markerHeight", 6)
                     .attr("orient", "auto")
                     .append("path")
                     .attr("d", "M0,-5L10,0L0,5")
-                    .attr("fill", color);
-            };
-
-            // Standard Colors
-            let standardColor = "#999";
-            if (type === "contains" || type === "inherits") standardColor = "#666";
-            if (type === "uses") standardColor = "#aaa";
-            
-            createMarker(`arrow-${type}`, standardColor);
-
-            // Colored markers for groups
-            for (let i = 1; i <= 10; i++) {
-                if (highlightColors[i]) {
-                    createMarker(`arrow-${type}-highlight-${i}`, highlightColors[i].stroke);
-                }
+                    .attr("fill", "#ffd700");
             }
         });
     }
 
-    // --- MAIN RENDER FUNCTION (DAGRE TREE LAYOUT) ---
     function renderGraph(data) {
-        currentData = data; // Store for redraw
-        nodes = JSON.parse(JSON.stringify(data.nodes || [])); // Deep copy to prevent ref issues
-        links = JSON.parse(JSON.stringify(data.edges || []));
+        nodes = data.nodes || [];
+        links = data.edges || [];
 
-        g.selectAll("*").remove(); // Clear canvas
+        g.selectAll("*").remove();
 
         if (nodes.length === 0) {
-            showError("No nodes found");
+            showError("No nodes found in the graph");
             return;
         }
 
-        // 1. Setup Dagre
-        const dagreGraph = new dagre.graphlib.Graph();
-        dagreGraph.setGraph({ 
-            rankdir: currentLayout, 
-            nodesep: 40, 
-            ranksep: 120,
-            marginx: 50,
-            marginy: 50
-        });
-        dagreGraph.setDefaultEdgeLabel(() => ({}));
-
-        // 2. Define Node Dimensions
-        const nodeWidth = 150;
-        const nodeHeight = 45;
-
-        nodes.forEach(node => {
-            dagreGraph.setNode(node.id, { label: node.label, width: nodeWidth, height: nodeHeight });
+        // Count highlighted elements by group
+        const highlightGroups = new Map();
+        nodes.filter(n => n.highlighted).forEach(n => {
+            const group = n.highlightGroup || 1;
+            highlightGroups.set(group, (highlightGroups.get(group) || 0) + 1);
         });
 
+        links.filter(l => l.highlighted).forEach(l => {
+            const group = l.highlightGroup || 1;
+            highlightGroups.set(group, (highlightGroups.get(group) || 0) + 1);
+        });
+
+        const highlightedNodes = nodes.filter(n => n.highlighted).length;
+        const highlightedEdges = links.filter(l => l.highlighted).length;
+
+        updateColorGroupsLegend(highlightGroups);
+
+        let statsHTML = `Nodes: ${nodes.length} | Edges: ${links.length}`;
+        if (highlightedNodes > 0) {
+            statsHTML += ` <span class="highlight-badge">${highlightedNodes} highlighted</span>`;
+        }
+        if (highlightedEdges > 0) {
+            statsHTML += ` <span class="highlight-badge">${highlightedEdges} paths</span>`;
+        }
+        document.getElementById('stats').innerHTML = statsHTML;
+
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // Build parent-child relationships from edges
+        const childrenMap = new Map();
+        const parentsMap = new Map();
+        
         links.forEach(link => {
-            const source = typeof link.source === 'object' ? link.source.id : link.source;
-            const target = typeof link.target === 'object' ? link.target.id : link.target;
-            dagreGraph.setEdge(source, target);
+            const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+            const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+            
+            if (!childrenMap.has(sourceId)) childrenMap.set(sourceId, []);
+            childrenMap.get(sourceId).push(targetId);
+            parentsMap.set(targetId, sourceId);
         });
+        
+        // Find root nodes (nodes with no parents)
+        let rootNodes = nodes.filter(n => !parentsMap.has(n.id));
+        if (rootNodes.length === 0 && nodes.length > 0) {
+            rootNodes = [nodes[0]]; // Fallback to first node
+        }
+        
+        // Build tree structure
+        function buildTree(nodeId, visited = new Set()) {
+            if (visited.has(nodeId)) return null; // Avoid cycles
+            visited.add(nodeId);
+            
+            const node = nodes.find(n => n.id === nodeId);
+            if (!node) return null;
+            
+            const children = childrenMap.get(nodeId) || [];
+            return {
+                ...node,
+                children: children.map(childId => buildTree(childId, visited)).filter(c => c !== null)
+            };
+        }
 
-        // 3. Calculate Layout
-        dagre.layout(dagreGraph);
+        // Create hierarchy
+        let root;
+        if (rootNodes.length === 1) {
+            root = d3.hierarchy(buildTree(rootNodes[0].id));
+        } else if (rootNodes.length > 1) {
+            root = d3.hierarchy({
+                id: '__virtual_root__',
+                label: '',
+                children: rootNodes.map(n => buildTree(n.id)).filter(c => c !== null)
+            });
+        } else {
+            // No edges case
+            root = d3.hierarchy({
+                id: '__virtual_root__',
+                label: '',
+                children: nodes.map(n => ({ ...n, children: [] }))
+            });
+        }
 
-        // 4. Map Coords back to data
-        dagreGraph.nodes().forEach(nodeId => {
-            const n = nodes.find(n => n.id === nodeId);
-            const point = dagreGraph.node(nodeId);
-            if (n) {
-                n.x = point.x;
-                n.y = point.y;
+        // Use tree layout
+        const treeLayout = d3.tree()
+            .size([width - 300, height - 300])
+            .separation((a, b) => {
+                return (a.parent === b.parent ? 1 : 1.5);
+            });
+
+        treeLayout(root);
+
+        // Apply positions to nodes
+        const nodePositions = new Map();
+        root.descendants().forEach(d => {
+            if (d.data.id && d.data.id !== '__virtual_root__') {
+                nodePositions.set(d.data.id, {
+                    x: d.x + 150,
+                    y: d.y + 150
+                });
             }
         });
 
-        // 5. Update Legend Stats
-        const highlightGroups = new Map();
-        nodes.filter(n => n.highlighted).forEach(n => highlightGroups.set(n.highlightGroup, 1));
-        links.filter(l => l.highlighted).forEach(l => highlightGroups.set(l.highlightGroup, 1));
-        updateColorGroupsLegend(highlightGroups);
-        
-        const highlightedCount = nodes.filter(n => n.highlighted).length;
-        let statsHTML = `Nodes: ${nodes.length} | Edges: ${links.length}`;
-        if (highlightedCount > 0) statsHTML += ` <span class="highlight-badge">${highlightedCount} highlighted</span>`;
-        document.getElementById('stats').innerHTML = statsHTML;
+        // Update node positions
+        nodes.forEach(node => {
+            const pos = nodePositions.get(node.id);
+            if (pos) {
+                node.x = pos.x;
+                node.y = pos.y;
+            } else {
+                // Fallback for orphan nodes
+                node.x = width / 2;
+                node.y = height / 2;
+            }
+            node.fx = node.x;
+            node.fy = node.y;
+        });
 
-        // 6. Draw Links (Curved lines)
-        const lineGenerator = d3.line()
-            .curve(d3.curveBasis) // Bezier curve
-            .x(d => d.x)
-            .y(d => d.y);
+        // Initialize simulation (stopped)
+        simulation = d3.forceSimulation(nodes)
+            .force("link", d3.forceLink(links).id(d => d.id).distance(150).strength(0))
+            .stop();
 
-        const linkSelection = g.append("g")
+        // Create links
+        const link = g.append("g")
             .selectAll("path")
             .data(links)
             .join("path")
             .attr("class", d => {
                 let classes = `link ${d.type || 'default'}`;
-                if (d.highlighted) classes += ` highlighted highlight-${d.highlightGroup}`;
+                if (d.highlighted) {
+                    classes += ` highlighted highlight-${d.highlightGroup || 1}`;
+                }
                 return classes;
             })
             .attr("marker-end", d => {
                 const type = d.type || 'default';
-                return d.highlighted ? `url(#arrow-${type}-highlight-${d.highlightGroup})` : `url(#arrow-${type})`;
-            })
-            .attr("d", d => {
-                const sourceId = typeof d.source === 'object' ? d.source.id : d.source;
-                const targetId = typeof d.target === 'object' ? d.target.id : d.target;
-                const s = nodes.find(n => n.id === sourceId);
-                const t = nodes.find(n => n.id === targetId);
-                
-                // Simple Bezier Logic: Start -> Midpoint -> End
-                return lineGenerator([
-                    {x: s.x, y: s.y},
-                    {x: (s.x + t.x) / 2, y: s.y}, // Control Point 1
-                    {x: (s.x + t.x) / 2, y: t.y}, // Control Point 2
-                    {x: t.x, y: t.y}
-                ]);
+                if (d.highlighted) {
+                    return `url(#arrow-${type}-highlight-${d.highlightGroup || 1})`;
+                }
+                return `url(#arrow-${type})`;
             });
 
-        // 7. Draw Nodes (Groups with Rect + Text)
-        const nodeSelection = g.append("g")
-            .selectAll("g")
+        // Create link labels
+        const linkLabel = g.append("g")
+            .selectAll("text")
+            .data(links.filter(d => d.label))
+            .join("text")
+            .attr("class", "link-label")
+            .text(d => d.label);
+
+        // Create nodes
+        const node = g.append("g")
+            .selectAll("rect")
             .data(nodes)
-            .join("g")
+            .join("rect")
             .attr("class", d => {
                 let classes = `node ${d.type || 'default'}`;
-                if (d.highlighted) classes += ` highlighted highlight-${d.highlightGroup}`;
+                if (d.highlighted) {
+                    classes += ` highlighted highlight-${d.highlightGroup || 1}`;
+                }
                 return classes;
             })
-            .attr("transform", d => `translate(${d.x},${d.y})`)
+            .attr("width", 80)
+            .attr("height", 80)
+            .attr("x", d => d.x - 40)
+            .attr("y", d => d.y - 40)
             .on("mouseenter", showTooltip)
             .on("mousemove", moveTooltip)
             .on("mouseleave", hideTooltip)
@@ -523,156 +744,487 @@
                 .on("drag", dragged)
                 .on("end", dragended));
 
-        nodeSelection.append("rect")
-            .attr("width", nodeWidth)
-            .attr("height", nodeHeight)
-            .attr("x", -nodeWidth / 2)
-            .attr("y", -nodeHeight / 2);
-
-        nodeSelection.append("text")
+        // Create labels
+        const label = g.append("g")
+            .selectAll("text")
+            .data(nodes)
+            .join("text")
             .attr("class", "label")
+            .attr("x", d => d.x)
+            .attr("y", d => d.y + 6)
             .text(d => {
-                const len = 20;
-                return d.label.length > len ? d.label.substring(0, len) + '...' : d.label;
+                const maxLength = 12;
+                return d.label.length > maxLength ? d.label.substring(0, maxLength) + '...' : d.label;
             });
 
-        centerGraph();
+        // Draw links immediately
+        link.attr("d", d => {
+            const sourceNode = nodes.find(n => n.id === (typeof d.source === 'object' ? d.source.id : d.source));
+            const targetNode = nodes.find(n => n.id === (typeof d.target === 'object' ? d.target.id : d.target));
+            if (sourceNode && targetNode) {
+                return `M${sourceNode.x},${sourceNode.y}L${targetNode.x},${targetNode.y}`;
+            }
+            return '';
+        });
+
+        // Position link labels
+        linkLabel
+            .attr("x", d => {
+                const sourceNode = nodes.find(n => n.id === (typeof d.source === 'object' ? d.source.id : d.source));
+                const targetNode = nodes.find(n => n.id === (typeof d.target === 'object' ? d.target.id : d.target));
+                if (sourceNode && targetNode) {
+                    return (sourceNode.x + targetNode.x) / 2;
+                }
+                return 0;
+            })
+            .attr("y", d => {
+                const sourceNode = nodes.find(n => n.id === (typeof d.source === 'object' ? d.source.id : d.source));
+                const targetNode = nodes.find(n => n.id === (typeof d.target === 'object' ? d.target.id : d.target));
+                if (sourceNode && targetNode) {
+                    return (sourceNode.y + targetNode.y) / 2;
+                }
+                return 0;
+            });
+
+        // Center graph after render
+        setTimeout(() => centerGraph(), 100);
+
         clearError();
     }
 
-    // --- DRAG FUNCTIONS (STATIC) ---
-    function dragstarted(event, d) {
-        d3.select(this).raise(); // Bring to front
-        d3.select(this).select("rect").attr("stroke", "#333");
-    }
-
-    function dragged(event, d) {
-        d.x = event.x;
-        d.y = event.y;
-        d3.select(this).attr("transform", `translate(${d.x},${d.y})`);
-        
-        // Redraw connected links
-        g.selectAll(".link").attr("d", l => {
-            const sId = typeof l.source === 'object' ? l.source.id : l.source;
-            const tId = typeof l.target === 'object' ? l.target.id : l.target;
-            
-            const s = nodes.find(n => n.id === sId);
-            const t = nodes.find(n => n.id === tId);
-            
-            const lineGenerator = d3.line().curve(d3.curveBasis).x(p => p.x).y(p => p.y);
-            return lineGenerator([
-                {x: s.x, y: s.y},
-                {x: (s.x + t.x) / 2, y: s.y},
-                {x: (s.x + t.x) / 2, y: t.y},
-                {x: t.x, y: t.y}
-            ]);
-        });
-    }
-
-    function dragended(event, d) {
-        d3.select(this).select("rect").attr("stroke", null);
-    }
-
-    // --- UTILS ---
-    function centerGraph() {
-        if (!svg || !zoom || nodes.length === 0) return;
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-
-        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-        nodes.forEach(n => {
-            minX = Math.min(minX, n.x);
-            maxX = Math.max(maxX, n.x);
-            minY = Math.min(minY, n.y);
-            maxY = Math.max(maxY, n.y);
-        });
-
-        const gW = maxX - minX + 200; // Add padding
-        const gH = maxY - minY + 200;
-        const scale = Math.min(width / gW, height / gH, 1);
-        
-        // Center calculation
-        const x = (width - gW * scale) / 2 - minX * scale + 100 * scale;
-        const y = (height - gH * scale) / 2 - minY * scale + 100 * scale;
-
-        svg.transition().duration(750).call(
-            zoom.transform, 
-            d3.zoomIdentity.translate(x, y).scale(scale)
-        );
-    }
-
-    function changeLayout() {
-        const layouts = ['LR', 'TB', 'RL', 'BT'];
-        const idx = layouts.indexOf(currentLayout);
-        currentLayout = layouts[(idx + 1) % layouts.length];
-        document.getElementById('layoutMode').textContent = currentLayout;
-        renderGraph(currentData);
-    }
-
-    // --- TOOLTIP LOGIC (Unchanged mostly) ---
+    // Tooltip functions
     let tooltip = null;
+
     function createTooltip() {
-        if (!tooltip) tooltip = d3.select("body").append("div").attr("class", "tooltip").style("display", "none");
+        if (!tooltip) {
+            tooltip = d3.select("body")
+                .append("div")
+                .attr("class", "tooltip")
+                .style("display", "none");
+        }
         return tooltip;
     }
 
     function showTooltip(event, d) {
         const tooltip = createTooltip();
+
         let html = `<div class="tooltip-title">${d.label}${d.highlighted ? ` <span class="highlight-badge" style="background: ${getHighlightColor(d.highlightGroup)}">GROUP ${d.highlightGroup}</span>` : ''}</div>`;
-        
-        if (d.fullPath && d.fullPath !== d.label) html += `<div style="font-size: 10px; color: #888; margin-bottom: 8px; font-family: monospace;">${d.fullPath}</div>`;
+
+        // Show full path if different from label
+        if (d.fullPath && d.fullPath !== d.label) {
+            html += `<div style="font-size: 10px; color: #888; margin-bottom: 8px; font-family: monospace;">${d.fullPath}</div>`;
+        }
+
+        // Show type
         html += `<div style="font-size: 11px; color: #666; margin-bottom: 8px;">Type: <strong>${d.type || 'node'}</strong></div>`;
-        
-        // ... (Include all other tooltip logic from previous file here - omitted for brevity but logic remains same) ...
-        // Simplified for this output to key fields:
-        if (d.brief) html += `<div class="tooltip-section"><div class="tooltip-section-title">Summary</div><div>${d.brief}</div></div>`;
-        if (d.classes && d.classes.length) html += `<div class="tooltip-section"><div class="tooltip-section-title">Classes</div>${d.classes.map(c=>`<div class="tooltip-member">${c}</div>`).join('')}</div>`;
-        
-        tooltip.html(html).style("display", "block").style("left", (event.pageX + 15) + "px").style("top", (event.pageY + 15) + "px");
+
+        if (d.stereotype) {
+            html += `<div class="tooltip-stereotype">&lt;&lt;${d.stereotype}&gt;&gt;</div>`;
+        }
+
+        // Show function signature for function nodes
+        if (d.type === 'function' && d.signature) {
+            html += `<div class="tooltip-section">`;
+            html += `<div class="tooltip-section-title">Signature</div>`;
+            html += `<div class="tooltip-member function" style="font-weight: bold;">${d.signature}</div>`;
+            html += `</div>`;
+        }
+
+        // Show brief summary for functions
+        if (d.brief) {
+            html += `<div class="tooltip-section">`;
+            html += `<div class="tooltip-section-title">Summary</div>`;
+            html += `<div style="color: #555; font-size: 12px; line-height: 1.4;">${d.brief}</div>`;
+            html += `</div>`;
+        }
+
+        // Show documentation for functions
+        if (d.documentation) {
+            html += `<div class="tooltip-section">`;
+            html += `<div class="tooltip-section-title">Documentation</div>`;
+            html += `<div style="color: #555; font-size: 11px; line-height: 1.4;">${d.documentation}</div>`;
+            html += `</div>`;
+        }
+
+        // Show classes for files
+        if (d.classes && d.classes.length > 0) {
+            html += `<div class="tooltip-section">`;
+            html += `<div class="tooltip-section-title">Classes (${d.classes.length})</div>`;
+            d.classes.slice(0, 10).forEach(cls => {
+                html += `<div class="tooltip-member">${cls}</div>`;
+            });
+            if (d.classes.length > 10) {
+                html += `<div style="color: #888; font-size: 10px; margin-top: 4px;">... and ${d.classes.length - 10} more</div>`;
+            }
+            html += `</div>`;
+        }
+
+        // Show functions for files
+        if (d.functions && d.functions.length > 0) {
+            html += `<div class="tooltip-section">`;
+            html += `<div class="tooltip-section-title">Functions (${d.functions.length})</div>`;
+            d.functions.slice(0, 10).forEach(func => {
+                html += `<div class="tooltip-member function">${func}</div>`;
+            });
+            if (d.functions.length > 10) {
+                html += `<div style="color: #888; font-size: 10px; margin-top: 4px;">... and ${d.functions.length - 10} more</div>`;
+            }
+            html += `</div>`;
+        }
+
+        if (d.attributes && d.attributes.length > 0) {
+            html += `<div class="tooltip-section">`;
+            html += `<div class="tooltip-section-title">Attributes (${d.attributes.length})</div>`;
+            d.attributes.forEach(attr => {
+                const visibility = attr.visibility || 'public';
+                const symbol = visibility === 'public' ? '+' : visibility === 'private' ? '-' : '#';
+                html += `<div class="tooltip-member ${visibility}">${symbol} ${attr.definition || attr}</div>`;
+            });
+            html += `</div>`;
+        }
+
+        // Show methods (for classes only, not functions)
+        if (d.methods && d.methods.length > 0 && d.type !== 'function') {
+            html += `<div class="tooltip-section">`;
+            html += `<div class="tooltip-section-title">Methods (${d.methods.length})</div>`;
+            d.methods.forEach(method => {
+                const visibility = method.visibility || 'public';
+                const symbol = visibility === 'public' ? '+' : visibility === 'private' ? '-' : '#';
+                const definition = method.definition || method;
+                html += `<div class="tooltip-member method ${visibility}">${symbol} ${definition}</div>`;
+            });
+            html += `</div>`;
+        }
+
+        if (d.members && d.members.length > 0) {
+            html += `<div class="tooltip-section">`;
+            html += `<div class="tooltip-section-title">Values (${d.members.length})</div>`;
+            d.members.forEach(member => {
+                html += `<div class="tooltip-member">${member}</div>`;
+            });
+            html += `</div>`;
+        }
+
+        tooltip.html(html)
+            .style("display", "block")
+            .style("left", (event.pageX + 15) + "px")
+            .style("top", (event.pageY + 15) + "px");
     }
 
     function moveTooltip(event) {
-        if (tooltip) tooltip.style("left", (event.pageX + 15) + "px").style("top", (event.pageY + 15) + "px");
+        if (tooltip) {
+            tooltip
+                .style("left", (event.pageX + 15) + "px")
+                .style("top", (event.pageY + 15) + "px");
+        }
     }
 
     function hideTooltip() {
-        if (tooltip) tooltip.style("display", "none");
+        if (tooltip) {
+            tooltip.style("display", "none");
+        }
     }
 
-    // --- DATA LOADING ---
-    function convertMCPToD3Format(data) {
-        // ... (Same conversion logic as before) ...
-        if (data.nodes && data.nodes.length > 0 && typeof data.nodes[0].highlighted === 'boolean') return data;
+    function dragstarted(event, d) {
+        d3.select(this).raise();
+        event.subject.fx = event.subject.x;
+        event.subject.fy = event.subject.y;
+    }
+
+    function dragged(event, d) {
+        // Update the node's position
+        d.fx = event.x;
+        d.fy = event.y;
+        d.x = event.x;
+        d.y = event.y;
         
-        const d3Data = { graphType: data.graphType || "classDiagram", nodes: [], edges: [] };
+        // Update node visual position
+        d3.select(this)
+            .attr("x", d.x - 40)
+            .attr("y", d.y - 40);
+        
+        // Update label position
+        g.selectAll(".label")
+            .filter(node => node.id === d.id)
+            .attr("x", d.x)
+            .attr("y", d.y + 6);
+        
+        // Update all connected links
+        g.selectAll("path.link")
+            .filter(link => {
+                const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                return sourceId === d.id || targetId === d.id;
+            })
+            .attr("d", link => {
+                const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                const sourceNode = nodes.find(n => n.id === sourceId);
+                const targetNode = nodes.find(n => n.id === targetId);
+                if (sourceNode && targetNode) {
+                    return `M${sourceNode.x},${sourceNode.y}L${targetNode.x},${targetNode.y}`;
+                }
+                return '';
+            });
+        
+        // Update link labels positions
+        g.selectAll(".link-label")
+            .filter(link => {
+                const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                return sourceId === d.id || targetId === d.id;
+            })
+            .attr("x", link => {
+                const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                const sourceNode = nodes.find(n => n.id === sourceId);
+                const targetNode = nodes.find(n => n.id === targetId);
+                if (sourceNode && targetNode) {
+                    return (sourceNode.x + targetNode.x) / 2;
+                }
+                return 0;
+            })
+            .attr("y", link => {
+                const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                const sourceNode = nodes.find(n => n.id === sourceId);
+                const targetNode = nodes.find(n => n.id === targetId);
+                if (sourceNode && targetNode) {
+                    return (sourceNode.y + targetNode.y) / 2;
+                }
+                return 0;
+            });
+    }
+
+    function dragended(event, d) {
+        // Keep the node at its dragged position
+        d.fx = event.x;
+        d.fy = event.y;
+    }
+
+    function resetSimulation() {
+        if (!nodes || nodes.length === 0) return;
+        
+        // Reload the current data
+        const currentPath = window.lastLoadedPath || 'test-graph.json';
+        fetch(currentPath)
+            .then(response => response.text())
+            .then(content => loadJSON(content))
+            .catch(error => console.error('Reset failed:', error));
+    }
+
+    function centerGraph() {
+        if (!svg || !zoom || nodes.length === 0) return;
+
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // Calculate bounding box of all nodes
+        let minX = Infinity, maxX = -Infinity;
+        let minY = Infinity, maxY = -Infinity;
+
+        nodes.forEach(node => {
+            if (node.x !== undefined && node.y !== undefined) {
+                minX = Math.min(minX, node.x);
+                maxX = Math.max(maxX, node.x);
+                minY = Math.min(minY, node.y);
+                maxY = Math.max(maxY, node.y);
+            }
+        });
+
+        // Calculate center of nodes and scale to fit
+        const graphWidth = maxX - minX;
+        const graphHeight = maxY - minY;
+        const graphCenterX = (minX + maxX) / 2;
+        const graphCenterY = (minY + maxY) / 2;
+
+        // Calculate scale to fit graph in viewport with padding
+        const scale = Math.min(
+            width / (graphWidth + 100),
+            height / (graphHeight + 100),
+            1.0 // Max zoom - keep at 1:1
+        );
+
+        // Calculate translation to center the graph
+        const translateX = width / 2 - graphCenterX * scale;
+        const translateY = height / 2 - graphCenterY * scale;
+
+        svg.transition().duration(750).call(
+            zoom.transform,
+            d3.zoomIdentity.translate(translateX, translateY).scale(scale)
+        );
+    }
+
+    function applyLayoutForces(simulation, width, height) {
+        simulation.force("x", null).force("y", null);
+
+        switch(currentLayout) {
+            case 'LR':
+                simulation
+                    .force("x", d3.forceX(d => {
+                        const importance = d.importance || 0;
+                        return width * 0.2 + (importance * -40);
+                    }).strength(0.4))
+                    .force("y", d3.forceY(height / 2).strength(0.1));
+                break;
+
+            case 'RL':
+                simulation
+                    .force("x", d3.forceX(d => {
+                        const importance = d.importance || 0;
+                        return width * 0.8 + (importance * 40);
+                    }).strength(0.4))
+                    .force("y", d3.forceY(height / 2).strength(0.1));
+                break;
+
+            case 'TB':
+                simulation
+                    .force("y", d3.forceY(d => {
+                        const importance = d.importance || 0;
+                        return height * 0.2 + (importance * -40);
+                    }).strength(0.4))
+                    .force("x", d3.forceX(width / 2).strength(0.1));
+                break;
+
+            case 'BT':
+                simulation
+                    .force("y", d3.forceY(d => {
+                        const importance = d.importance || 0;
+                        return height * 0.8 + (importance * 40);
+                    }).strength(0.4))
+                    .force("x", d3.forceX(width / 2).strength(0.1));
+                break;
+        }
+
+        simulation.alpha(1).restart();
+    }
+
+    function changeLayout() {
+        // Layout is fixed to TB (top to bottom tree), no need to change
+        return;
+    }
+
+    function showError(message) {
+        document.getElementById('error').innerHTML = `<div class="error">${message}</div>`;
+    }
+
+    function clearError() {
+        document.getElementById('error').innerHTML = '';
+    }
+
+    function convertMCPToD3Format(data) {
+        // Check if it's already in D3 format (has "highlighted" boolean)
+        if (data.nodes && data.nodes.length > 0 && typeof data.nodes[0].highlighted === 'boolean') {
+            return data; // Already D3 format
+        }
+
+        // Convert from MCP format to D3 format
+        const d3Data = {
+            graphType: data.graphType || "classDiagram",
+            nodes: [],
+            edges: []
+        };
+
+        // Convert nodes
         if (data.nodes) {
             data.nodes.forEach(node => {
+                // Extract display name from ID (handle paths and complex IDs)
                 let displayName = node.id;
-                if (node.type === "file") displayName = node.id.split("/").pop();
-                else if (node.id.includes("::")) displayName = node.id.split("::").pop();
+                if (node.type === "file") {
+                    // For files, show just the filename
+                    const parts = node.id.split("/");
+                    displayName = parts[parts.length - 1];
+                } else if (node.id.includes("::")) {
+                    // For qualified names like "File::function", show just the function name
+                    displayName = node.id.split("::").pop();
+                } else {
+                    // For other types, show the full name
+                    displayName = node.id;
+                }
 
                 const d3Node = {
-                    id: node.id, fullPath: node.id, label: displayName, type: node.type || "class",
-                    highlighted: (node.highlight || 0) > 0, highlightGroup: node.highlight || 0,
-                    metadata: node.metadata // Keep metadata for tooltip
+                    id: node.id,
+                    fullPath: node.id, // Store full path for tooltip
+                    label: displayName,
+                    type: node.type || "class",
+                    highlighted: (node.highlight || 0) > 0, // Convert int to boolean
+                    highlightGroup: node.highlight || 0 // Store the highlight group number
                 };
-                // Copy helpful metadata props to top level for tooltip
-                if(node.metadata) {
-                    if(node.metadata.brief_summary) d3Node.brief = node.metadata.brief_summary;
-                    if(node.metadata.classes) d3Node.classes = node.metadata.classes;
+
+                const metadata = node.metadata || {};
+
+                // Convert class metadata
+                if (node.type === "class") {
+                    if (metadata.attributes) {
+                        d3Node.attributes = metadata.attributes.map(attr => ({
+                            visibility: "public",
+                            definition: attr
+                        }));
+                    }
+                    if (metadata.functions) {
+                        d3Node.methods = metadata.functions.map(func => ({
+                            visibility: "public",
+                            definition: func
+                        }));
+                    }
                 }
+
+                // Convert function metadata
+                if (node.type === "function") {
+                    const params = metadata.parameters || [];
+                    const returns = metadata.returns || "void";
+                    const brief = metadata.brief_summary || "";
+                    const doc = metadata.full_documentation || "";
+
+                    // Store function signature with name
+                    d3Node.signature = `${displayName}(${params.join(', ')}) → ${returns}`;
+                    d3Node.parameters = params;
+                    d3Node.returns = returns;
+
+                    if (brief) d3Node.brief = brief;
+                    if (doc) d3Node.documentation = doc;
+                }
+
+                // Convert file metadata
+                if (node.type === "file" && metadata) {
+                    if (metadata.classes && metadata.classes.length > 0) {
+                        d3Node.classes = metadata.classes;
+                    }
+                    if (metadata.functions && metadata.functions.length > 0) {
+                        d3Node.functions = metadata.functions;
+                    }
+                }
+
+                // Keep existing attributes/methods if already present
+                if (node.attributes) d3Node.attributes = node.attributes;
+                if (node.methods) d3Node.methods = node.methods;
+                if (node.members) d3Node.members = node.members;
+                if (node.stereotype) d3Node.stereotype = node.stereotype;
+
                 d3Data.nodes.push(d3Node);
             });
         }
+
+        // Convert edges
         if (data.edges) {
+            const edgeTypeMap = {
+                "inherit": "inherits",
+                "invokes": "uses",
+                "contains": "contains"
+            };
+
             data.edges.forEach(edge => {
                 d3Data.edges.push({
-                    source: edge.source, target: edge.target,
-                    type: edge.type || "uses", label: edge.label || "",
-                    highlighted: (edge.highlight || 0) > 0, highlightGroup: edge.highlight || 0
+                    source: edge.source,
+                    target: edge.target,
+                    type: edgeTypeMap[edge.type] || edge.type || "uses",
+                    label: edge.label || edge.type || "",
+                    highlighted: (edge.highlight || 0) > 0, // Convert int to boolean
+                    highlightGroup: edge.highlight || 0 // Store the highlight group number
                 });
             });
         }
+
         return d3Data;
     }
 
@@ -683,45 +1235,68 @@
             renderGraph(d3Data);
         } catch (error) {
             showError(`Error parsing JSON: ${error.message}`);
+            console.error(error);
         }
     }
 
-    function showError(msg) { document.getElementById('error').innerHTML = `<div class="error">${msg}</div>`; }
-    function clearError() { document.getElementById('error').innerHTML = ''; }
+    // Drag and drop support
+    document.body.addEventListener('dragover', (e) => {
+        e.preventDefault();
+    });
 
-    // Drop Handler
-    document.body.addEventListener('dragover', (e) => e.preventDefault());
     document.body.addEventListener('drop', (e) => {
         e.preventDefault();
         const file = e.dataTransfer.files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = (event) => loadJSON(event.target.result);
+            reader.onload = function(event) {
+                window.lastLoadedPath = file.name;
+                loadJSON(event.target.result);
+            };
             reader.readAsText(file);
         }
     });
 
+    // Window resize handler
     window.addEventListener('resize', () => {
-        svg.attr("width", window.innerWidth).attr("height", window.innerHeight);
-        renderGraph(currentData);
+        if (nodes && nodes.length > 0) {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            svg.attr("width", width).attr("height", height);
+            setTimeout(() => centerGraph(), 100);
+        }
     });
 
-    // Auto-load attempt
-    const autoLoadPaths = ['../code_graph.json', 'test-graph.json'];
+    // Initialize
+    initGraph();
+
+    // Try to auto-load from MCP output path first, then fallback to test-graph.json
+    const autoLoadPaths = [
+        'code_graph.json',  // MCP tool output location
+        'test-graph.json'          // Fallback test file
+    ];
+
     async function tryAutoLoad() {
         for (const path of autoLoadPaths) {
             try {
                 const response = await fetch(path);
                 if (response.ok) {
-                    loadJSON(await response.text());
+                    const content = await response.text();
+                    window.lastLoadedPath = path;
+                    loadJSON(content);
+                    console.log(`Loaded graph from: ${path}`);
                     return;
                 }
-            } catch (e) {}
+            } catch (error) {
+                console.log(`Could not load from ${path}:`, error);
+            }
         }
-        document.getElementById('info').innerHTML = '<div>Drop a .json file to visualize</div><div id="stats"></div>';
+        // No file found
+        document.getElementById('info').innerHTML =
+            '<div>No graph loaded. Drop a .json file to visualize</div>' +
+            '<div id="stats"></div>';
     }
 
-    initGraph();
     tryAutoLoad();
 </script>
 </body>
