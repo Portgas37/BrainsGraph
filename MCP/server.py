@@ -145,7 +145,7 @@ def add_nodes(node_list: list[dict[str, Any]]) -> str:
                 - brief_summary (str): Brief description of what the function does
                 - full_documentation (str): Complete function documentation/docstring
             
-            - highlight (int, optional): Color code for highlighting (0-10, where 0 = no highlight)
+            - highlight (list[int], optional): Array of color codes for highlighting (1-10). Multiple colors can be assigned to indicate the node answers multiple questions. When displayed, the highest color number will be shown.
 
     Returns:
         str: Status message indicating success and number of nodes added/skipped
@@ -189,11 +189,17 @@ def add_nodes(node_list: list[dict[str, Any]]) -> str:
         if "label" not in node:
             node["label"] = node["id"].split(":")[-1] if ":" in node["id"] else node["id"]
 
-        # Ensure highlight field exists and is valid
+        # Ensure highlight field exists as an array
         if "highlight" not in node:
-            node["highlight"] = 0
-        else:
-            node["highlight"] = max(0, min(10, int(node["highlight"])))
+            node["highlight"] = []
+        elif isinstance(node["highlight"], int):
+            # Convert old single-value format to array
+            if node["highlight"] > 0:
+                node["highlight"] = [node["highlight"]]
+            else:
+                node["highlight"] = []
+        elif not isinstance(node["highlight"], list):
+            node["highlight"] = []
 
         # Ensure metadata exists
         if "metadata" not in node:
@@ -230,7 +236,7 @@ def add_nodes(node_list: list[dict[str, Any]]) -> str:
 
     save_graph(graph)
 
-    return f"Added {added_count} node(s), skipped {skipped_count} existing/invalid node(s)."
+    return f"Added {added_count} node(s), skipped {skipped_count} existing/invalid node(s).\n\nIMPORTANT: Tell the user to open the graph viewer HTML file to see the visualization. Provide a clickable file path link to the graph-viewer.html file (it should be in the same directory as code_graph.json, typically in .brainsGraph/ folder). The graph will auto-refresh when changes are made."
 
 
 @mcp.tool()
@@ -249,7 +255,7 @@ def add_edges(edge_list: list[dict[str, Any]]) -> str:
                 - "inherit": Class inheritance (source class inherits from target class)
                 - "invokes": Function invocation (source function calls target function)
                 - "contains": Containment relationship (source file/class contains target element)
-            - highlight (int, optional): Color code for highlighting (0-10, where 0 = no highlight)
+            - highlight (list[int], optional): Array of color codes for highlighting (1-10). Multiple colors can be assigned to indicate the node answers multiple questions. When displayed, the highest color number will be shown.
 
     Returns:
         str: Status message indicating success and number of edges added/skipped
@@ -299,11 +305,17 @@ def add_edges(edge_list: list[dict[str, Any]]) -> str:
         # Normalize edge type
         edge["type"] = edge_type
 
-        # Ensure highlight field exists and is valid
+        # Ensure highlight field exists as an array
         if "highlight" not in edge:
-            edge["highlight"] = 0
-        else:
-            edge["highlight"] = max(0, min(10, int(edge["highlight"])))
+            edge["highlight"] = []
+        elif isinstance(edge["highlight"], int):
+            # Convert old single-value format to array
+            if edge["highlight"] > 0:
+                edge["highlight"] = [edge["highlight"]]
+            else:
+                edge["highlight"] = []
+        elif not isinstance(edge["highlight"], list):
+            edge["highlight"] = []
 
         graph["edges"].append(edge)
         existing_edges.add(edge_sig)
@@ -311,7 +323,7 @@ def add_edges(edge_list: list[dict[str, Any]]) -> str:
 
     save_graph(graph)
 
-    return f"Added {added_count} edge(s), skipped {skipped_count} existing/invalid edge(s)."
+    return f"Added {added_count} edge(s), skipped {skipped_count} existing/invalid edge(s).\n\nIMPORTANT: Tell the user to open the graph viewer HTML file to see the visualization. Provide a clickable file path link to the graph-viewer.html file (it should be in the same directory as code_graph.json, typically in .brainsGraph/ folder). The graph will auto-refresh when changes are made."
 
 
 @mcp.tool()
@@ -324,7 +336,9 @@ def highlight_nodes(node_ids: list[str], color: int, question: str = "") -> str:
     2. Each color (1-10) represents ONE question - provide a clear, specific question string
     3. You MUST also highlight the edges connected to these nodes using highlight_edges() with the same color
     4. Multiple colors can coexist - each represents a different question/analysis
-    5. After highlighting nodes, immediately call highlight_edges() to highlight all edges connected to/from these nodes
+    5. Nodes/edges can belong to MULTIPLE color groups (stored as an array) - if a node answers multiple questions, it will accumulate multiple colors
+    6. When displayed, the HIGHEST color number is shown visually (e.g., if a node has colors [1, 4, 7], color 7 will be displayed)
+    7. After highlighting nodes, immediately call highlight_edges() to highlight all edges connected to/from these nodes
 
     Workflow:
     1. Call read_graph() to see the current graph
@@ -332,6 +346,9 @@ def highlight_nodes(node_ids: list[str], color: int, question: str = "") -> str:
     3. Call highlight_nodes() with those node IDs, color, and the question
     4. Identify all edges connecting those nodes
     5. Call highlight_edges() with those edge IDs and the same color
+
+    Note: This function ADDS the color to each node's highlight array. If the node already has other colors,
+    the new color is appended. This allows nodes to be relevant to multiple questions simultaneously.
 
     Args:
         node_ids: List of node IDs to highlight (must exist in the graph)
@@ -347,14 +364,25 @@ def highlight_nodes(node_ids: list[str], color: int, question: str = "") -> str:
     if "highlightQuestions" not in graph:
         graph["highlightQuestions"] = {}
 
-    # Don't reset all highlights - only update the specified nodes
+    # Update the specified nodes by adding the color to their highlight array
     highlighted_count = 0
     node_id_set = set(node_ids)
 
     for node in graph["nodes"]:
         if node["id"] in node_id_set:
-            node["highlight"] = color
-            highlighted_count += 1
+            # Ensure highlight is an array
+            if not isinstance(node.get("highlight"), list):
+                if isinstance(node.get("highlight"), int) and node["highlight"] > 0:
+                    node["highlight"] = [node["highlight"]]
+                else:
+                    node["highlight"] = []
+
+            # Add the color if not already present
+            if color not in node["highlight"] and color > 0:
+                node["highlight"].append(color)
+                highlighted_count += 1
+            elif color in node["highlight"]:
+                highlighted_count += 1
 
     # Store the question for this color (always update if provided)
     if question:
@@ -362,7 +390,7 @@ def highlight_nodes(node_ids: list[str], color: int, question: str = "") -> str:
 
     save_graph(graph)
 
-    return f"Highlighted {highlighted_count} node(s) with color {color}."
+    return f"Highlighted {highlighted_count} node(s) with color {color}.\n\nIMPORTANT: Tell the user to open the graph viewer HTML file to see the highlighted nodes. Provide a clickable file path link to the graph-viewer.html file (it should be in the same directory as code_graph.json, typically in .brainsGraph/ folder). The graph will auto-refresh when changes are made."
 
 
 @mcp.tool()
@@ -381,6 +409,10 @@ def highlight_edges(edge_ids: list[str], color: int) -> str:
     2. Find all edges where source OR target matches any of those node IDs
     3. Pass those edge IDs to this function with the same color
 
+    Note: This function ADDS the color to each edge's highlight array. If the edge already has other colors
+    from previous questions, the new color is appended. When displayed, the HIGHEST color number is shown.
+    This allows edges to be relevant to multiple questions simultaneously.
+
     Args:
         edge_ids: List of edge IDs to highlight (must exist in the graph)
         color: Color code as integer (1-10, same as used in highlight_nodes())
@@ -390,22 +422,29 @@ def highlight_edges(edge_ids: list[str], color: int) -> str:
     """
     graph = load_graph()
 
-    # First, reset all highlights
-    for edge in graph["edges"]:
-        edge["highlight"] = 0
-
-    # Then apply new highlights
+    # Update the specified edges by adding the color to their highlight array
     highlighted_count = 0
     edge_id_set = set(edge_ids)
 
     for edge in graph["edges"]:
         if edge["id"] in edge_id_set:
-            edge["highlight"] = color
-            highlighted_count += 1
+            # Ensure highlight is an array
+            if not isinstance(edge.get("highlight"), list):
+                if isinstance(edge.get("highlight"), int) and edge["highlight"] > 0:
+                    edge["highlight"] = [edge["highlight"]]
+                else:
+                    edge["highlight"] = []
+
+            # Add the color if not already present
+            if color not in edge["highlight"] and color > 0:
+                edge["highlight"].append(color)
+                highlighted_count += 1
+            elif color in edge["highlight"]:
+                highlighted_count += 1
 
     save_graph(graph)
 
-    return f"Highlighted {highlighted_count} edge(s) with color {color}."
+    return f"Highlighted {highlighted_count} edge(s) with color {color}.\n\nIMPORTANT: Tell the user to open the graph viewer HTML file to see the highlighted edges. Provide a clickable file path link to the graph-viewer.html file (it should be in the same directory as code_graph.json, typically in .brainsGraph/ folder). The graph will auto-refresh when changes are made."
 
 
 @mcp.tool()

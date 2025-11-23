@@ -1143,8 +1143,9 @@
                     fullPath: node.id, // Store full path for tooltip
                     label: displayName,
                     type: node.type || "class",
-                    highlighted: (node.highlight || 0) > 0, // Convert int to boolean
-                    highlightGroup: node.highlight || 0 // Store the highlight group number
+                    highlighted: Array.isArray(node.highlight) ? node.highlight.length > 0 : (node.highlight || 0) > 0,
+                    highlightGroup: Array.isArray(node.highlight) && node.highlight.length > 0 ? Math.max(...node.highlight) : (node.highlight || 0),
+                    highlightGroups: Array.isArray(node.highlight) ? node.highlight : (node.highlight > 0 ? [node.highlight] : []) // Store all highlight groups
                 };
 
                 const metadata = node.metadata || {};
@@ -1215,8 +1216,9 @@
                     target: edge.target,
                     type: edgeTypeMap[edge.type] || edge.type || "uses",
                     label: edge.label || edge.type || "",
-                    highlighted: (edge.highlight || 0) > 0, // Convert int to boolean
-                    highlightGroup: edge.highlight || 0 // Store the highlight group number
+                    highlighted: Array.isArray(edge.highlight) ? edge.highlight.length > 0 : (edge.highlight || 0) > 0,
+                    highlightGroup: Array.isArray(edge.highlight) && edge.highlight.length > 0 ? Math.max(...edge.highlight) : (edge.highlight || 0),
+                    highlightGroups: Array.isArray(edge.highlight) ? edge.highlight : (edge.highlight > 0 ? [edge.highlight] : []) // Store all highlight groups
                 });
             });
         }
