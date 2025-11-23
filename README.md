@@ -1,6 +1,6 @@
 # GraphBrains: Interactive QA code visualization
 
-![GraphBrains Demo](demo.png)
+<img src="demo.png" alt="GraphBrains Demo" width="70%">
 
 ## Code Graph MCP Server
 
