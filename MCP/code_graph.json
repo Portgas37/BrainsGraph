@@ -1,0 +1,277 @@
+{
+  "nodes": [
+    {
+      "type": "class",
+      "metadata": {
+        "methods": [
+          {
+            "definition": "login() bool",
+            "visibility": "public"
+          },
+          {
+            "visibility": "public",
+            "definition": "logout() void"
+          },
+          {
+            "visibility": "private",
+            "definition": "validatePassword() bool"
+          }
+        ],
+        "attributes": [
+          {
+            "visibility": "private",
+            "definition": "string username"
+          },
+          {
+            "definition": "string email",
+            "visibility": "private"
+          },
+          {
+            "visibility": "private",
+            "definition": "string password"
+          }
+        ]
+      },
+      "id": "User",
+      "highlight": 1
+    },
+    {
+      "type": "class",
+      "id": "Database",
+      "metadata": {
+        "methods": [
+          {
+            "visibility": "public",
+            "definition": "connect() bool"
+          },
+          {
+            "visibility": "public",
+            "definition": "query(sql) Result"
+          },
+          {
+            "visibility": "public",
+            "definition": "close() void"
+          }
+        ],
+        "attributes": [
+          {
+            "definition": "Connection conn",
+            "visibility": "private"
+          },
+          {
+            "visibility": "private",
+            "definition": "string host"
+          }
+        ]
+      },
+      "highlight": 1
+    },
+    {
+      "metadata": {
+        "methods": [
+          {
+            "visibility": "public",
+            "definition": "authenticate(user) Token"
+          },
+          {
+            "definition": "verify(token) bool",
+            "visibility": "public"
+          }
+        ],
+        "attributes": [
+          {
+            "definition": "TokenManager tokens",
+            "visibility": "private"
+          }
+        ]
+      },
+      "id": "AuthService",
+      "type": "class",
+      "highlight": 1
+    },
+    {
+      "metadata": {
+        "methods": [
+          {
+            "definition": "isValid() bool",
+            "visibility": "public"
+          },
+          {
+            "visibility": "public",
+            "definition": "refresh() void"
+          }
+        ],
+        "attributes": [
+          {
+            "visibility": "private",
+            "definition": "string sessionId"
+          },
+          {
+            "definition": "User user",
+            "visibility": "private"
+          },
+          {
+            "visibility": "private",
+            "definition": "datetime expiry"
+          }
+        ]
+      },
+      "id": "Session",
+      "type": "class",
+      "highlight": 0
+    },
+    {
+      "id": "Logger",
+      "type": "class",
+      "metadata": {
+        "attributes": [
+          {
+            "visibility": "private",
+            "definition": "string logFile"
+          }
+        ],
+        "methods": [
+          {
+            "visibility": "public",
+            "definition": "log(message) void"
+          },
+          {
+            "visibility": "public",
+            "definition": "error(message) void"
+          }
+        ]
+      },
+      "highlight": 1
+    },
+    {
+      "id": "Cache",
+      "metadata": {
+        "methods": [
+          {
+            "definition": "get(key) Object",
+            "visibility": "public"
+          },
+          {
+            "visibility": "public",
+            "definition": "set(key, value) void"
+          },
+          {
+            "visibility": "public",
+            "definition": "clear() void"
+          }
+        ],
+        "attributes": [
+          {
+            "visibility": "private",
+            "definition": "Map<string, Object> data"
+          }
+        ]
+      },
+      "type": "class",
+      "highlight": 0
+    },
+    {
+      "type": "class",
+      "id": "Validator",
+      "metadata": {
+        "methods": [
+          {
+            "definition": "validateEmail(email) bool",
+            "visibility": "public"
+          },
+          {
+            "definition": "validatePassword(pwd) bool",
+            "visibility": "public"
+          }
+        ]
+      },
+      "highlight": 1
+    },
+    {
+      "id": "Config",
+      "metadata": {
+        "members": [
+          "DB_HOST",
+          "DB_PORT",
+          "API_KEY",
+          "MAX_SESSIONS"
+        ],
+        "stereotype": "enumeration"
+      },
+      "type": "enum",
+      "highlight": 0
+    }
+  ],
+  "edges": [
+    {
+      "target": "Database",
+      "type": "uses",
+      "source": "User",
+      "id": "edge_0",
+      "highlight": 0
+    },
+    {
+      "target": "AuthService",
+      "source": "User",
+      "type": "uses",
+      "id": "edge_1",
+      "highlight": 0
+    },
+    {
+      "type": "uses",
+      "target": "Validator",
+      "source": "User",
+      "id": "edge_2",
+      "highlight": 0
+    },
+    {
+      "source": "AuthService",
+      "type": "uses",
+      "target": "Database",
+      "id": "edge_3",
+      "highlight": 0
+    },
+    {
+      "source": "AuthService",
+      "target": "Session",
+      "type": "contains",
+      "id": "edge_4",
+      "highlight": 0
+    },
+    {
+      "target": "User",
+      "source": "Session",
+      "type": "references",
+      "id": "edge_5",
+      "highlight": 0
+    },
+    {
+      "target": "Logger",
+      "source": "Database",
+      "type": "uses",
+      "id": "edge_6",
+      "highlight": 0
+    },
+    {
+      "target": "Cache",
+      "type": "uses",
+      "source": "Database",
+      "id": "edge_7",
+      "highlight": 0
+    },
+    {
+      "source": "Database",
+      "type": "uses",
+      "target": "Config",
+      "id": "edge_8",
+      "highlight": 0
+    },
+    {
+      "type": "uses",
+      "target": "Logger",
+      "source": "AuthService",
+      "id": "edge_9",
+      "highlight": 0
+    }
+  ]
+}

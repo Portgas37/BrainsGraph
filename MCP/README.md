@@ -151,9 +151,7 @@ python server.py
       "args": [
         "/Users/youssefboughizane/Documents/projects/lauzhack/mcp_experiment/graph_mcp_server/server.py"
       ],
-      "env": {
-        "GRAPH_FILE_PATH": "/Users/youssefboughizane/Documents/projects/lauzhack/mcp_experiment/graph_mcp_server/code_graph.json"
-      }
+     
     }
   }
 }

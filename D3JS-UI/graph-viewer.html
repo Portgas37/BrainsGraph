@@ -18,19 +18,22 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+            color: #2c3e50;
         }
 
         #controls {
             position: fixed;
-            top: 10px;
-            left: 10px;
+            top: 20px;
+            left: 20px;
             background: rgba(255, 255, 255, 0.95);
-            padding: 10px;
-            border-radius: 6px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
             z-index: 1000;
             max-width: 280px;
             font-size: 11px;
@@ -42,26 +45,28 @@
         }
 
         button {
-            padding: 6px 10px;
-            background: #666;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #5e72e4 0%, #825ee4 100%);
             border: none;
-            border-radius: 3px;
+            border-radius: 10px;
             color: white;
             cursor: pointer;
-            font-size: 11px;
-            font-weight: 500;
-            transition: all 0.2s;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(94, 114, 228, 0.25);
         }
 
         button:hover {
-            background: #555;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(94, 114, 228, 0.4);
         }
 
         button:active {
-            background: #444;
+            transform: translateY(0);
         }
 
         .icon-btn {
@@ -85,48 +90,62 @@
 
         .node {
             cursor: pointer;
-            stroke: #666;
+            stroke: #5e72e4;
             stroke-width: 2px;
-            fill: #e0e0e0;
+            fill: rgba(255, 255, 255, 0.95);
+            transition: all 0.3s ease;
+            rx: 12;
+            ry: 12;
         }
 
         .node.enum {
-            fill: #d4d4d4;
-            stroke: #888;
+            fill: rgba(255, 255, 255, 0.95);
+            stroke: #e056fd;
         }
 
         .node.interface {
-            fill: #e8e8e8;
-            stroke: #666;
+            fill: rgba(255, 255, 255, 0.95);
+            stroke: #11cdef;
             stroke-dasharray: 4,2;
         }
 
         .node.abstract {
-            fill: #dadada;
-            stroke: #777;
+            fill: rgba(255, 255, 255, 0.95);
+            stroke: #2dce89;
             stroke-dasharray: 6,3;
         }
 
         .node:not(.highlighted):hover {
-            fill: #c5c5c5;
-            stroke: #333;
-            stroke-width: 3px;
+            fill: rgba(94, 114, 228, 0.1);
+            stroke-width: 2.5px;
+            stroke: #5e72e4;
         }
 
         .node.highlighted {
             stroke-width: 3px !important;
+            filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.9)) drop-shadow(0 0 25px rgba(255, 215, 0, 0.6)) !important;
+            animation: neon-pulse 1.5s ease-in-out infinite;
         }
 
-        .node.highlight-1 { fill: #ffd93d !important; stroke: #ff6b6b !important; filter: drop-shadow(0 0 8px rgba(255, 107, 107, 0.6)) !important; }
-        .node.highlight-2 { fill: #a8e6cf !important; stroke: #3cb371 !important; filter: drop-shadow(0 0 8px rgba(60, 179, 113, 0.6)) !important; }
-        .node.highlight-3 { fill: #ff9ff3 !important; stroke: #da70d6 !important; filter: drop-shadow(0 0 8px rgba(218, 112, 214, 0.6)) !important; }
-        .node.highlight-4 { fill: #feca57 !important; stroke: #ee5a24 !important; filter: drop-shadow(0 0 8px rgba(238, 90, 36, 0.6)) !important; }
-        .node.highlight-5 { fill: #48dbfb !important; stroke: #0abde3 !important; filter: drop-shadow(0 0 8px rgba(10, 189, 227, 0.6)) !important; }
-        .node.highlight-6 { fill: #ff6348 !important; stroke: #e74c3c !important; filter: drop-shadow(0 0 8px rgba(231, 76, 60, 0.6)) !important; }
-        .node.highlight-7 { fill: #dfe6e9 !important; stroke: #636e72 !important; filter: drop-shadow(0 0 8px rgba(99, 110, 114, 0.6)) !important; }
-        .node.highlight-8 { fill: #a29bfe !important; stroke: #6c5ce7 !important; filter: drop-shadow(0 0 8px rgba(108, 92, 231, 0.6)) !important; }
-        .node.highlight-9 { fill: #fd79a8 !important; stroke: #e84393 !important; filter: drop-shadow(0 0 8px rgba(232, 67, 147, 0.6)) !important; }
-        .node.highlight-10 { fill: #00b894 !important; stroke: #00cec9 !important; filter: drop-shadow(0 0 8px rgba(0, 206, 201, 0.6)) !important; }
+        @keyframes neon-pulse {
+            0%, 100% { 
+                filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.9)) drop-shadow(0 0 25px rgba(255, 215, 0, 0.6));
+            }
+            50% { 
+                filter: drop-shadow(0 0 20px rgba(255, 215, 0, 1)) drop-shadow(0 0 35px rgba(255, 215, 0, 0.8));
+            }
+        }
+
+        .node.highlight-1 { fill: rgba(255, 215, 0, 0.35) !important; stroke: #ffd700 !important; stroke-width: 3px !important; }
+        .node.highlight-2 { fill: rgba(255, 215, 0, 0.35) !important; stroke: #ffd700 !important; stroke-width: 3px !important; }
+        .node.highlight-3 { fill: rgba(255, 215, 0, 0.35) !important; stroke: #ffd700 !important; stroke-width: 3px !important; }
+        .node.highlight-4 { fill: rgba(255, 215, 0, 0.35) !important; stroke: #ffd700 !important; stroke-width: 3px !important; }
+        .node.highlight-5 { fill: rgba(255, 215, 0, 0.35) !important; stroke: #ffd700 !important; stroke-width: 3px !important; }
+        .node.highlight-6 { fill: rgba(255, 215, 0, 0.35) !important; stroke: #ffd700 !important; stroke-width: 3px !important; }
+        .node.highlight-7 { fill: rgba(255, 215, 0, 0.35) !important; stroke: #ffd700 !important; stroke-width: 3px !important; }
+        .node.highlight-8 { fill: rgba(255, 215, 0, 0.35) !important; stroke: #ffd700 !important; stroke-width: 3px !important; }
+        .node.highlight-9 { fill: rgba(255, 215, 0, 0.35) !important; stroke: #ffd700 !important; stroke-width: 3px !important; }
+        .node.highlight-10 { fill: rgba(255, 215, 0, 0.35) !important; stroke: #ffd700 !important; stroke-width: 3px !important; }
 
         .node.highlighted:hover {
             opacity: 0.8;
@@ -134,45 +153,58 @@
 
         .link {
             fill: none;
-            stroke: #999;
+            stroke: rgba(94, 114, 228, 0.5);
             stroke-width: 2px;
         }
 
         .link.contains {
-            stroke: #666;
-            stroke-width: 2.5px;
+            stroke: #825ee4;
+            stroke-width: 3px;
         }
 
         .link.uses {
-            stroke: #aaa;
-            stroke-dasharray: 5,5;
-        }
-
-        .link.references {
-            stroke: #888;
+            stroke: #5e72e4;
             stroke-dasharray: 8,4;
         }
 
+        .link.references {
+            stroke: #f5365c;
+            stroke-dasharray: 10,5;
+        }
+
         .link.inherits {
-            stroke: #666;
-            stroke-width: 3px;
+            stroke: #11cdef;
+            stroke-width: 3.5px;
         }
 
         .link.highlighted {
             stroke-width: 4px !important;
-            animation: pulse 2s ease-in-out infinite;
+            opacity: 1;
+            filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.9)) drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
+            animation: link-pulse 1.5s ease-in-out infinite;
         }
 
-        .link.highlight-1 { stroke: #ff6b6b !important; filter: drop-shadow(0 0 6px rgba(255, 107, 107, 0.8)) !important; }
-        .link.highlight-2 { stroke: #3cb371 !important; filter: drop-shadow(0 0 6px rgba(60, 179, 113, 0.8)) !important; }
-        .link.highlight-3 { stroke: #da70d6 !important; filter: drop-shadow(0 0 6px rgba(218, 112, 214, 0.8)) !important; }
-        .link.highlight-4 { stroke: #ee5a24 !important; filter: drop-shadow(0 0 6px rgba(238, 90, 36, 0.8)) !important; }
-        .link.highlight-5 { stroke: #0abde3 !important; filter: drop-shadow(0 0 6px rgba(10, 189, 227, 0.8)) !important; }
-        .link.highlight-6 { stroke: #e74c3c !important; filter: drop-shadow(0 0 6px rgba(231, 76, 60, 0.8)) !important; }
-        .link.highlight-7 { stroke: #636e72 !important; filter: drop-shadow(0 0 6px rgba(99, 110, 114, 0.8)) !important; }
-        .link.highlight-8 { stroke: #6c5ce7 !important; filter: drop-shadow(0 0 6px rgba(108, 92, 231, 0.8)) !important; }
-        .link.highlight-9 { stroke: #e84393 !important; filter: drop-shadow(0 0 6px rgba(232, 67, 147, 0.8)) !important; }
-        .link.highlight-10 { stroke: #00cec9 !important; filter: drop-shadow(0 0 6px rgba(0, 206, 201, 0.8)) !important; }
+        @keyframes link-pulse {
+            0%, 100% { 
+                filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.9)) drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
+                opacity: 1;
+            }
+            50% { 
+                filter: drop-shadow(0 0 15px rgba(255, 215, 0, 1)) drop-shadow(0 0 25px rgba(255, 215, 0, 0.8));
+                opacity: 0.9;
+            }
+        }
+
+        .link.highlight-1 { stroke: #ffd700 !important; }
+        .link.highlight-2 { stroke: #ffd700 !important; }
+        .link.highlight-3 { stroke: #ffd700 !important; }
+        .link.highlight-4 { stroke: #ffd700 !important; }
+        .link.highlight-5 { stroke: #ffd700 !important; }
+        .link.highlight-6 { stroke: #ffd700 !important; }
+        .link.highlight-7 { stroke: #ffd700 !important; }
+        .link.highlight-8 { stroke: #ffd700 !important; }
+        .link.highlight-9 { stroke: #ffd700 !important; }
+        .link.highlight-10 { stroke: #ffd700 !important; }
 
         @keyframes pulse {
             0%, 100% { opacity: 1; }
@@ -180,42 +212,46 @@
         }
 
         .label {
-            font-size: 10px;
-            font-weight: 500;
+            font-size: 13px;
+            font-weight: 600;
             pointer-events: none;
             text-anchor: middle;
-            fill: #333;
+            fill: #2c3e50;
             user-select: none;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
         }
 
         .link-label {
-            font-size: 9px;
-            fill: #666;
+            font-size: 10px;
+            fill: #525f7f;
             pointer-events: none;
             user-select: none;
+            filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.8));
         }
 
         .tooltip {
             position: fixed;
             background: rgba(255, 255, 255, 0.98);
-            border: 2px solid #666;
-            border-radius: 8px;
-            padding: 15px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 20px;
             pointer-events: none;
             z-index: 2000;
             max-width: 500px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
             font-size: 13px;
             line-height: 1.5;
         }
 
         .tooltip-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 8px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #ddd;
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid rgba(94, 114, 228, 0.2);
         }
 
         .tooltip-stereotype {
@@ -265,30 +301,36 @@
 
         #info {
             position: fixed;
-            bottom: 20px;
-            left: 20px;
+            bottom: 30px;
+            left: 30px;
             background: rgba(255, 255, 255, 0.95);
-            padding: 20px 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 24px 28px;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
             z-index: 1000;
             font-size: 15px;
-            color: #666;
-            min-width: 300px;
+            color: #2c3e50;
+            min-width: 320px;
             line-height: 1.6;
         }
 
         #legend {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 30px;
+            right: 30px;
             background: rgba(255, 255, 255, 0.95);
-            padding: 20px 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 24px 28px;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
             z-index: 1000;
             font-size: 13px;
-            max-width: 350px;
+            max-width: 380px;
             line-height: 1.6;
         }
 
@@ -298,20 +340,23 @@
             margin-top: 10px;
         }
 
+
         .highlight-badge {
             display: inline-block;
-            background: #ff6b6b;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 10px;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
             margin-left: 8px;
-            animation: badge-pulse 1.5s ease-in-out infinite;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            animation: badge-pulse 2s ease-in-out infinite;
         }
 
         @keyframes badge-pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+            0%, 100% { transform: scale(1); box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6); }
         }
     </style>
 </head>
@@ -320,10 +365,9 @@
     <div class="button-group">
         <button class="icon-btn" onclick="resetSimulation()" title="Reset Layout">🔄</button>
         <button class="icon-btn" onclick="centerGraph()" title="Center">🎯</button>
-        <button class="icon-btn" onclick="changeLayout()" title="Change Direction">↔️</button>
     </div>
-    <div style="margin-top: 8px; font-size: 11px; color: #666; font-weight: 600;">
-        <span id="layoutMode">LR</span>
+    <div style="margin-top: 8px; font-size: 11px; color: #2c3e50; font-weight: 600;">
+        Tree Layout (Top to Bottom)
     </div>
     <div id="error"></div>
 </div>
@@ -334,17 +378,17 @@
 </div>
 
 <div id="legend">
-    <h3 style="margin: 0 0 12px 0; font-size: 15px; color: #333; border-bottom: 2px solid #ddd; padding-bottom: 8px; font-weight: bold;">
+    <h3 style="margin: 0 0 12px 0; font-size: 15px; color: #2c3e50; border-bottom: 2px solid rgba(94, 114, 228, 0.2); padding-bottom: 8px; font-weight: bold;">
         Legend
     </h3>
     <div style="margin-bottom: 12px;">
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-            <div style="width: 20px; height: 20px; background: #ffd93d; border: 3px solid #ff6b6b; border-radius: 50%; box-shadow: 0 0 8px rgba(255,107,107,0.6);"></div>
-            <div style="font-size: 13px; color: #444; font-weight: 500;">Highlighted Node</div>
+            <div style="width: 20px; height: 20px; background: rgba(255, 215, 0, 0.35); border: 2px solid #ffd700; border-radius: 4px; box-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 25px rgba(255, 215, 0, 0.4);"></div>
+            <div style="font-size: 13px; color: #2c3e50; font-weight: 500;">Highlighted Node</div>
         </div>
         <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 40px; height: 4px; background: #ff6b6b; box-shadow: 0 0 6px rgba(255,107,107,0.8);"></div>
-            <div style="font-size: 13px; color: #444; font-weight: 500;">Highlighted Path</div>
+            <div style="width: 40px; height: 4px; background: #ffd700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.5);"></div>
+            <div style="font-size: 13px; color: #2c3e50; font-weight: 500;">Highlighted Path</div>
         </div>
     </div>
     <div id="colorGroupsLegend" style="margin-top: 12px;">
@@ -358,20 +402,20 @@
     // D3.js Visualization
     let simulation, svg, g, zoom;
     let nodes = [], links = [];
-    let currentLayout = 'LR';
+    let currentLayout = 'TB';
 
     // Color mapping for highlight groups
     const highlightColors = {
-        1: { stroke: '#ff6b6b', fill: '#ffd93d', name: 'Red/Yellow' },
-        2: { stroke: '#3cb371', fill: '#a8e6cf', name: 'Green' },
-        3: { stroke: '#da70d6', fill: '#ff9ff3', name: 'Purple' },
-        4: { stroke: '#ee5a24', fill: '#feca57', name: 'Orange' },
-        5: { stroke: '#0abde3', fill: '#48dbfb', name: 'Cyan' },
-        6: { stroke: '#e74c3c', fill: '#ff6348', name: 'Red' },
-        7: { stroke: '#636e72', fill: '#dfe6e9', name: 'Gray' },
-        8: { stroke: '#6c5ce7', fill: '#a29bfe', name: 'Indigo' },
-        9: { stroke: '#e84393', fill: '#fd79a8', name: 'Pink' },
-        10: { stroke: '#00cec9', fill: '#00b894', name: 'Turquoise' }
+        1: { stroke: '#ffd700', fill: 'rgba(255, 215, 0, 0.35)', name: 'Yellow Neon' },
+        2: { stroke: '#ffd700', fill: 'rgba(255, 215, 0, 0.35)', name: 'Yellow Neon' },
+        3: { stroke: '#ffd700', fill: 'rgba(255, 215, 0, 0.35)', name: 'Yellow Neon' },
+        4: { stroke: '#ffd700', fill: 'rgba(255, 215, 0, 0.35)', name: 'Yellow Neon' },
+        5: { stroke: '#ffd700', fill: 'rgba(255, 215, 0, 0.35)', name: 'Yellow Neon' },
+        6: { stroke: '#ffd700', fill: 'rgba(255, 215, 0, 0.35)', name: 'Yellow Neon' },
+        7: { stroke: '#ffd700', fill: 'rgba(255, 215, 0, 0.35)', name: 'Yellow Neon' },
+        8: { stroke: '#ffd700', fill: 'rgba(255, 215, 0, 0.35)', name: 'Yellow Neon' },
+        9: { stroke: '#ffd700', fill: 'rgba(255, 215, 0, 0.35)', name: 'Yellow Neon' },
+        10: { stroke: '#ffd700', fill: 'rgba(255, 215, 0, 0.35)', name: 'Yellow Neon' }
     };
 
     function getHighlightColor(group) {
@@ -385,15 +429,15 @@
             return;
         }
 
-        let html = '<div style="font-size: 13px; font-weight: 600; margin-bottom: 8px; padding-top: 12px; border-top: 2px solid #ddd;">Color Groups:</div>';
+        let html = '<div style="font-size: 13px; font-weight: 600; margin-bottom: 8px; padding-top: 12px; border-top: 2px solid rgba(94, 114, 228, 0.2); color: #2c3e50;">Color Groups:</div>';
         html += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 12px;">';
 
         Array.from(activeGroups.keys()).sort((a, b) => a - b).forEach(group => {
             const color = highlightColors[group];
             if (color) {
                 html += `<div style="display: flex; align-items: center; gap: 6px;">
-                        <div style="width: 14px; height: 14px; background: ${color.stroke}; border-radius: 50%;"></div>
-                        <span style="font-weight: 500;">Group ${group}</span>
+                        <div style="width: 14px; height: 14px; background: ${color.stroke}; border-radius: 3px; box-shadow: 0 0 8px ${color.stroke}80;"></div>
+                        <span style="font-weight: 500; color: #2c3e50;">Group ${group}</span>
                     </div>`;
             }
         });
@@ -424,13 +468,66 @@
         // Arrow markers - create for each type and each highlight group
         const defs = svg.append("defs");
 
+        // Add gradient definitions for nodes
+        const nodeGradient = defs.append("linearGradient")
+            .attr("id", "nodeGradient")
+            .attr("x1", "0%").attr("y1", "0%")
+            .attr("x2", "100%").attr("y2", "100%");
+        nodeGradient.append("stop").attr("offset", "0%").attr("stop-color", "#667eea");
+        nodeGradient.append("stop").attr("offset", "100%").attr("stop-color", "#764ba2");
+
+        const enumGradient = defs.append("linearGradient")
+            .attr("id", "enumGradient")
+            .attr("x1", "0%").attr("y1", "0%")
+            .attr("x2", "100%").attr("y2", "100%");
+        enumGradient.append("stop").attr("offset", "0%").attr("stop-color", "#f093fb");
+        enumGradient.append("stop").attr("offset", "100%").attr("stop-color", "#f5576c");
+
+        const interfaceGradient = defs.append("linearGradient")
+            .attr("id", "interfaceGradient")
+            .attr("x1", "0%").attr("y1", "0%")
+            .attr("x2", "100%").attr("y2", "100%");
+        interfaceGradient.append("stop").attr("offset", "0%").attr("stop-color", "#4facfe");
+        interfaceGradient.append("stop").attr("offset", "100%").attr("stop-color", "#00f2fe");
+
+        const abstractGradient = defs.append("linearGradient")
+            .attr("id", "abstractGradient")
+            .attr("x1", "0%").attr("y1", "0%")
+            .attr("x2", "100%").attr("y2", "100%");
+        abstractGradient.append("stop").attr("offset", "0%").attr("stop-color", "#43e97b");
+        abstractGradient.append("stop").attr("offset", "100%").attr("stop-color", "#38f9d7");
+
+        // Add highlight gradients
+        for (let i = 1; i <= 10; i++) {
+            const gradient = defs.append("linearGradient")
+                .attr("id", `highlight${i}`)
+                .attr("x1", "0%").attr("y1", "0%")
+                .attr("x2", "100%").attr("y2", "100%");
+            
+            const colors = {
+                1: ["#ff6b6b", "#ee5a24"],
+                2: ["#00ff88", "#00d2d3"],
+                3: ["#da70d6", "#ff6348"],
+                4: ["#ffa502", "#ff6348"],
+                5: ["#0abde3", "#48dbfb"],
+                6: ["#ff4757", "#ff6348"],
+                7: ["#747d8c", "#a4b0be"],
+                8: ["#5f27cd", "#a29bfe"],
+                9: ["#ff6348", "#fd79a8"],
+                10: ["#00d2d3", "#00b894"]
+            };
+            
+            gradient.append("stop").attr("offset", "0%").attr("stop-color", colors[i][0]);
+            gradient.append("stop").attr("offset", "100%").attr("stop-color", colors[i][1]);
+        }
+
         // Default arrow markers
         const arrowTypes = ["default", "contains", "uses", "references", "inherits"];
         arrowTypes.forEach(type => {
             defs.append("marker")
                 .attr("id", `arrow-${type}`)
                 .attr("viewBox", "0 -5 10 10")
-                .attr("refX", 25)
+                .attr("refX", 50)
                 .attr("refY", 0)
                 .attr("markerWidth", 6)
                 .attr("markerHeight", 6)
@@ -438,29 +535,26 @@
                 .append("path")
                 .attr("d", "M0,-5L10,0L0,5")
                 .attr("fill", () => {
-                    if (type === "contains") return "#666";
-                    if (type === "uses") return "#aaa";
-                    if (type === "references") return "#888";
-                    if (type === "inherits") return "#666";
-                    return "#999";
+                    if (type === "contains") return "rgba(118, 75, 162, 0.7)";
+                    if (type === "uses") return "rgba(102, 126, 234, 0.5)";
+                    if (type === "references") return "rgba(255, 107, 107, 0.5)";
+                    if (type === "inherits") return "rgba(0, 210, 211, 0.7)";
+                    return "rgba(102, 126, 234, 0.6)";
                 });
 
             // Create colored markers for each highlight group
             for (let i = 1; i <= 10; i++) {
-                const color = highlightColors[i];
-                if (color) {
-                    defs.append("marker")
-                        .attr("id", `arrow-${type}-highlight-${i}`)
-                        .attr("viewBox", "0 -5 10 10")
-                        .attr("refX", 25)
-                        .attr("refY", 0)
-                        .attr("markerWidth", 6)
-                        .attr("markerHeight", 6)
-                        .attr("orient", "auto")
-                        .append("path")
-                        .attr("d", "M0,-5L10,0L0,5")
-                        .attr("fill", color.stroke);
-                }
+                defs.append("marker")
+                    .attr("id", `arrow-${type}-highlight-${i}`)
+                    .attr("viewBox", "0 -5 10 10")
+                    .attr("refX", 50)
+                    .attr("refY", 0)
+                    .attr("markerWidth", 6)
+                    .attr("markerHeight", 6)
+                    .attr("orient", "auto")
+                    .append("path")
+                    .attr("d", "M0,-5L10,0L0,5")
+                    .attr("fill", "#ffd700");
             }
         });
     }
@@ -479,32 +573,23 @@
         // Count highlighted elements by group
         const highlightGroups = new Map();
         nodes.filter(n => n.highlighted).forEach(n => {
-            const group = n.highlightGroup;
+            const group = n.highlightGroup || 1;
             highlightGroups.set(group, (highlightGroups.get(group) || 0) + 1);
-            console.log(`Highlighted node: ${n.id}, group: ${group}, highlighted: ${n.highlighted}`);
         });
 
-        // Also count edge groups
         links.filter(l => l.highlighted).forEach(l => {
-            const group = l.highlightGroup;
+            const group = l.highlightGroup || 1;
             highlightGroups.set(group, (highlightGroups.get(group) || 0) + 1);
         });
 
         const highlightedNodes = nodes.filter(n => n.highlighted).length;
         const highlightedEdges = links.filter(l => l.highlighted).length;
 
-        console.log(`Total highlighted nodes: ${highlightedNodes}, edges: ${highlightedEdges}`);
-
-        // Update the legend with only active groups
         updateColorGroupsLegend(highlightGroups);
 
         let statsHTML = `Nodes: ${nodes.length} | Edges: ${links.length}`;
         if (highlightedNodes > 0) {
             statsHTML += ` <span class="highlight-badge">${highlightedNodes} highlighted</span>`;
-            // Show groups
-            highlightGroups.forEach((count, group) => {
-                statsHTML += ` <span class="highlight-badge" style="background: ${getHighlightColor(group)}">Group ${group}: ${count}</span>`;
-            });
         }
         if (highlightedEdges > 0) {
             statsHTML += ` <span class="highlight-badge">${highlightedEdges} paths</span>`;
@@ -514,35 +599,98 @@
         const width = window.innerWidth;
         const height = window.innerHeight;
 
-        // Calculate node importance
-        const inDegree = new Map();
-        const outDegree = new Map();
-
-        nodes.forEach(node => {
-            inDegree.set(node.id, 0);
-            outDegree.set(node.id, 0);
-        });
-
+        // Build parent-child relationships from edges
+        const childrenMap = new Map();
+        const parentsMap = new Map();
+        
         links.forEach(link => {
             const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
             const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-            outDegree.set(sourceId, (outDegree.get(sourceId) || 0) + 1);
-            inDegree.set(targetId, (inDegree.get(targetId) || 0) + 1);
+            
+            if (!childrenMap.has(sourceId)) childrenMap.set(sourceId, []);
+            childrenMap.get(sourceId).push(targetId);
+            parentsMap.set(targetId, sourceId);
+        });
+        
+        // Find root nodes (nodes with no parents)
+        let rootNodes = nodes.filter(n => !parentsMap.has(n.id));
+        if (rootNodes.length === 0 && nodes.length > 0) {
+            rootNodes = [nodes[0]]; // Fallback to first node
+        }
+        
+        // Build tree structure
+        function buildTree(nodeId, visited = new Set()) {
+            if (visited.has(nodeId)) return null; // Avoid cycles
+            visited.add(nodeId);
+            
+            const node = nodes.find(n => n.id === nodeId);
+            if (!node) return null;
+            
+            const children = childrenMap.get(nodeId) || [];
+            return {
+                ...node,
+                children: children.map(childId => buildTree(childId, visited)).filter(c => c !== null)
+            };
+        }
+
+        // Create hierarchy
+        let root;
+        if (rootNodes.length === 1) {
+            root = d3.hierarchy(buildTree(rootNodes[0].id));
+        } else if (rootNodes.length > 1) {
+            root = d3.hierarchy({
+                id: '__virtual_root__',
+                label: '',
+                children: rootNodes.map(n => buildTree(n.id)).filter(c => c !== null)
+            });
+        } else {
+            // No edges case
+            root = d3.hierarchy({
+                id: '__virtual_root__',
+                label: '',
+                children: nodes.map(n => ({ ...n, children: [] }))
+            });
+        }
+
+        // Use tree layout
+        const treeLayout = d3.tree()
+            .size([width - 300, height - 300])
+            .separation((a, b) => {
+                return (a.parent === b.parent ? 1 : 1.5);
+            });
+
+        treeLayout(root);
+
+        // Apply positions to nodes
+        const nodePositions = new Map();
+        root.descendants().forEach(d => {
+            if (d.data.id && d.data.id !== '__virtual_root__') {
+                nodePositions.set(d.data.id, {
+                    x: d.x + 150,
+                    y: d.y + 150
+                });
+            }
         });
 
+        // Update node positions
         nodes.forEach(node => {
-            const out = outDegree.get(node.id) || 0;
-            const inn = inDegree.get(node.id) || 0;
-            node.importance = out - inn;
+            const pos = nodePositions.get(node.id);
+            if (pos) {
+                node.x = pos.x;
+                node.y = pos.y;
+            } else {
+                // Fallback for orphan nodes
+                node.x = width / 2;
+                node.y = height / 2;
+            }
+            node.fx = node.x;
+            node.fy = node.y;
         });
 
+        // Initialize simulation (stopped)
         simulation = d3.forceSimulation(nodes)
-            .force("link", d3.forceLink(links).id(d => d.id).distance(150))
-            .force("charge", d3.forceManyBody().strength(-600))
-            .force("center", d3.forceCenter(width / 2, height / 2))
-            .force("collision", d3.forceCollide().radius(60));
-
-        applyLayoutForces(simulation, width, height);
+            .force("link", d3.forceLink(links).id(d => d.id).distance(150).strength(0))
+            .stop();
 
         // Create links
         const link = g.append("g")
@@ -552,15 +700,14 @@
             .attr("class", d => {
                 let classes = `link ${d.type || 'default'}`;
                 if (d.highlighted) {
-                    classes += ` highlighted highlight-${d.highlightGroup}`;
-                    console.log(`Edge ${d.source.id || d.source} -> ${d.target.id || d.target} classes: ${classes}`);
+                    classes += ` highlighted highlight-${d.highlightGroup || 1}`;
                 }
                 return classes;
             })
             .attr("marker-end", d => {
                 const type = d.type || 'default';
                 if (d.highlighted) {
-                    return `url(#arrow-${type}-highlight-${d.highlightGroup})`;
+                    return `url(#arrow-${type}-highlight-${d.highlightGroup || 1})`;
                 }
                 return `url(#arrow-${type})`;
             });
@@ -575,18 +722,20 @@
 
         // Create nodes
         const node = g.append("g")
-            .selectAll("circle")
+            .selectAll("rect")
             .data(nodes)
-            .join("circle")
+            .join("rect")
             .attr("class", d => {
                 let classes = `node ${d.type || 'default'}`;
                 if (d.highlighted) {
-                    classes += ` highlighted highlight-${d.highlightGroup}`;
-                    console.log(`Node ${d.id} classes: ${classes}`);
+                    classes += ` highlighted highlight-${d.highlightGroup || 1}`;
                 }
                 return classes;
             })
-            .attr("r", 20)
+            .attr("width", 80)
+            .attr("height", 80)
+            .attr("x", d => d.x - 40)
+            .attr("y", d => d.y - 40)
             .on("mouseenter", showTooltip)
             .on("mousemove", moveTooltip)
             .on("mouseleave", hideTooltip)
@@ -601,48 +750,44 @@
             .data(nodes)
             .join("text")
             .attr("class", "label")
+            .attr("x", d => d.x)
+            .attr("y", d => d.y + 6)
             .text(d => {
-                const maxLength = 10;
+                const maxLength = 12;
                 return d.label.length > maxLength ? d.label.substring(0, maxLength) + '...' : d.label;
             });
 
-        // Update positions on tick
-        simulation.on("tick", () => {
-            link.attr("d", d => {
-                return `M${d.source.x},${d.source.y}L${d.target.x},${d.target.y}`;
+        // Draw links immediately
+        link.attr("d", d => {
+            const sourceNode = nodes.find(n => n.id === (typeof d.source === 'object' ? d.source.id : d.source));
+            const targetNode = nodes.find(n => n.id === (typeof d.target === 'object' ? d.target.id : d.target));
+            if (sourceNode && targetNode) {
+                return `M${sourceNode.x},${sourceNode.y}L${targetNode.x},${targetNode.y}`;
+            }
+            return '';
+        });
+
+        // Position link labels
+        linkLabel
+            .attr("x", d => {
+                const sourceNode = nodes.find(n => n.id === (typeof d.source === 'object' ? d.source.id : d.source));
+                const targetNode = nodes.find(n => n.id === (typeof d.target === 'object' ? d.target.id : d.target));
+                if (sourceNode && targetNode) {
+                    return (sourceNode.x + targetNode.x) / 2;
+                }
+                return 0;
+            })
+            .attr("y", d => {
+                const sourceNode = nodes.find(n => n.id === (typeof d.source === 'object' ? d.source.id : d.source));
+                const targetNode = nodes.find(n => n.id === (typeof d.target === 'object' ? d.target.id : d.target));
+                if (sourceNode && targetNode) {
+                    return (sourceNode.y + targetNode.y) / 2;
+                }
+                return 0;
             });
 
-            linkLabel
-                .attr("x", d => {
-                    const midX = (d.source.x + d.target.x) / 2;
-                    const dx = d.target.x - d.source.x;
-                    const dy = d.target.y - d.source.y;
-                    const length = Math.sqrt(dx * dx + dy * dy);
-                    const offsetX = -dy / length * 15;
-                    return midX + offsetX;
-                })
-                .attr("y", d => {
-                    const midY = (d.source.y + d.target.y) / 2;
-                    const dx = d.target.x - d.source.x;
-                    const dy = d.target.y - d.source.y;
-                    const length = Math.sqrt(dx * dx + dy * dy);
-                    const offsetY = dx / length * 15;
-                    return midY + offsetY;
-                });
-
-            node
-                .attr("cx", d => d.x)
-                .attr("cy", d => d.y);
-
-            label
-                .attr("x", d => d.x)
-                .attr("y", d => d.y + 5);
-        });
-
-        // Auto-center the graph after simulation stabilizes
-        simulation.on("end", () => {
-            setTimeout(() => centerGraph(), 100);
-        });
+        // Center graph after render
+        setTimeout(() => centerGraph(), 100);
 
         clearError();
     }
@@ -780,30 +925,92 @@
         }
     }
 
-    function dragstarted(event) {
-        if (!event.active) simulation.alphaTarget(0.3).restart();
+    function dragstarted(event, d) {
+        d3.select(this).raise();
         event.subject.fx = event.subject.x;
         event.subject.fy = event.subject.y;
     }
 
-    function dragged(event) {
-        event.subject.fx = event.x;
-        event.subject.fy = event.y;
+    function dragged(event, d) {
+        // Update the node's position
+        d.fx = event.x;
+        d.fy = event.y;
+        d.x = event.x;
+        d.y = event.y;
+        
+        // Update node visual position
+        d3.select(this)
+            .attr("x", d.x - 40)
+            .attr("y", d.y - 40);
+        
+        // Update label position
+        g.selectAll(".label")
+            .filter(node => node.id === d.id)
+            .attr("x", d.x)
+            .attr("y", d.y + 6);
+        
+        // Update all connected links
+        g.selectAll("path.link")
+            .filter(link => {
+                const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                return sourceId === d.id || targetId === d.id;
+            })
+            .attr("d", link => {
+                const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                const sourceNode = nodes.find(n => n.id === sourceId);
+                const targetNode = nodes.find(n => n.id === targetId);
+                if (sourceNode && targetNode) {
+                    return `M${sourceNode.x},${sourceNode.y}L${targetNode.x},${targetNode.y}`;
+                }
+                return '';
+            });
+        
+        // Update link labels positions
+        g.selectAll(".link-label")
+            .filter(link => {
+                const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                return sourceId === d.id || targetId === d.id;
+            })
+            .attr("x", link => {
+                const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                const sourceNode = nodes.find(n => n.id === sourceId);
+                const targetNode = nodes.find(n => n.id === targetId);
+                if (sourceNode && targetNode) {
+                    return (sourceNode.x + targetNode.x) / 2;
+                }
+                return 0;
+            })
+            .attr("y", link => {
+                const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                const sourceNode = nodes.find(n => n.id === sourceId);
+                const targetNode = nodes.find(n => n.id === targetId);
+                if (sourceNode && targetNode) {
+                    return (sourceNode.y + targetNode.y) / 2;
+                }
+                return 0;
+            });
     }
 
-    function dragended(event) {
-        if (!event.active) simulation.alphaTarget(0);
-        event.subject.fx = null;
-        event.subject.fy = null;
+    function dragended(event, d) {
+        // Keep the node at its dragged position
+        d.fx = event.x;
+        d.fy = event.y;
     }
 
     function resetSimulation() {
-        if (!simulation) return;
-        nodes.forEach(node => {
-            node.fx = null;
-            node.fy = null;
-        });
-        simulation.alpha(1).restart();
+        if (!nodes || nodes.length === 0) return;
+        
+        // Reload the current data
+        const currentPath = window.lastLoadedPath || 'test-graph.json';
+        fetch(currentPath)
+            .then(response => response.text())
+            .then(content => loadJSON(content))
+            .catch(error => console.error('Reset failed:', error));
     }
 
     function centerGraph() {
@@ -893,17 +1100,8 @@
     }
 
     function changeLayout() {
-        if (!simulation) return;
-
-        const layouts = ['LR', 'RL', 'TB', 'BT'];
-        const currentIndex = layouts.indexOf(currentLayout);
-        currentLayout = layouts[(currentIndex + 1) % layouts.length];
-
-        document.getElementById('layoutMode').textContent = currentLayout;
-
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        applyLayoutForces(simulation, width, height);
+        // Layout is fixed to TB (top to bottom tree), no need to change
+        return;
     }
 
     function showError(message) {
@@ -1052,6 +1250,7 @@
         if (file) {
             const reader = new FileReader();
             reader.onload = function(event) {
+                window.lastLoadedPath = file.name;
                 loadJSON(event.target.result);
             };
             reader.readAsText(file);
@@ -1060,12 +1259,11 @@
 
     // Window resize handler
     window.addEventListener('resize', () => {
-        if (simulation) {
+        if (nodes && nodes.length > 0) {
             const width = window.innerWidth;
             const height = window.innerHeight;
             svg.attr("width", width).attr("height", height);
-            simulation.force("center", d3.forceCenter(width / 2, height / 2));
-            simulation.alpha(0.3).restart();
+            setTimeout(() => centerGraph(), 100);
         }
     });
 
@@ -1074,7 +1272,7 @@
 
     // Try to auto-load from MCP output path first, then fallback to test-graph.json
     const autoLoadPaths = [
-        '../code_graph.json',  // MCP tool output location
+        'code_graph.json',  // MCP tool output location
         'test-graph.json'          // Fallback test file
     ];
 
@@ -1084,6 +1282,7 @@
                 const response = await fetch(path);
                 if (response.ok) {
                     const content = await response.text();
+                    window.lastLoadedPath = path;
                     loadJSON(content);
                     console.log(`Loaded graph from: ${path}`);
                     return;
@@ -1094,7 +1293,7 @@
         }
         // No file found
         document.getElementById('info').innerHTML =
-            '<div>No graph loaded. Drop a .json file or use the file picker</div>' +
+            '<div>No graph loaded. Drop a .json file to visualize</div>' +
             '<div id="stats"></div>';
     }
 
