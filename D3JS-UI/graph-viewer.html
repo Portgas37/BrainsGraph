@@ -1272,14 +1272,21 @@
         'test-graph.json'          // Fallback test file
     ];
 
+    let currentFilePath = null;
+    let lastModified = null;
+    let autoRefreshInterval = null;
+
     async function tryAutoLoad() {
         for (const path of autoLoadPaths) {
             try {
                 const response = await fetch(path);
                 if (response.ok) {
                     const content = await response.text();
+                    currentFilePath = path;
+                    lastModified = response.headers.get('Last-Modified');
                     loadJSON(content);
                     console.log(`Loaded graph from: ${path}`);
+                    startAutoRefresh();
                     return;
                 }
             } catch (error) {
@@ -1290,6 +1297,67 @@
         document.getElementById('info').innerHTML =
             '<div>No graph loaded. Drop a .json file or use the file picker</div>' +
             '<div id="stats"></div>';
+    }
+
+    async function checkForUpdates() {
+        if (!currentFilePath) return;
+
+        try {
+            const response = await fetch(currentFilePath, {
+                method: 'HEAD',
+                cache: 'no-cache'
+            });
+
+            if (response.ok) {
+                const newModified = response.headers.get('Last-Modified');
+
+                // If Last-Modified header is not available, try fetching content and compare
+                if (!newModified) {
+                    const fullResponse = await fetch(currentFilePath, { cache: 'no-cache' });
+                    if (fullResponse.ok) {
+                        const content = await fullResponse.text();
+                        const currentContent = JSON.stringify(simulation ? {
+                            nodes: simulation.nodes(),
+                            edges: simulation.force("link").links()
+                        } : null);
+
+                        if (content !== currentContent) {
+                            console.log('Graph file updated, reloading...');
+                            loadJSON(content);
+                        }
+                    }
+                } else if (newModified !== lastModified) {
+                    console.log('Graph file updated, reloading...');
+                    lastModified = newModified;
+                    const fullResponse = await fetch(currentFilePath, { cache: 'no-cache' });
+                    if (fullResponse.ok) {
+                        const content = await fullResponse.text();
+                        loadJSON(content);
+                    }
+                }
+            }
+        } catch (error) {
+            console.log('Error checking for updates:', error);
+        }
+    }
+
+    function startAutoRefresh() {
+        // Clear any existing interval
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+        }
+
+        // Check for updates every 1 second
+        autoRefreshInterval = setInterval(checkForUpdates, 1000);
+        console.log('Auto-refresh enabled (checking every 1 second)');
+    }
+
+    function stopAutoRefresh() {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+            autoRefreshInterval = null;
+            console.log('Auto-refresh disabled');
+        }
     }
 
     tryAutoLoad();

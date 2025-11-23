@@ -317,12 +317,26 @@ def add_edges(edge_list: list[dict[str, Any]]) -> str:
 @mcp.tool()
 def highlight_nodes(node_ids: list[str], color: int, question: str = "") -> str:
     """
-    Highlight specific nodes in the graph.
+    Highlight specific nodes in the graph to answer a question.
+
+    IMPORTANT INSTRUCTIONS:
+    1. ALWAYS use the read_graph() tool first to understand the current graph structure before deciding what to highlight
+    2. Each color (1-10) represents ONE question - provide a clear, specific question string
+    3. You MUST also highlight the edges connected to these nodes using highlight_edges() with the same color
+    4. Multiple colors can coexist - each represents a different question/analysis
+    5. After highlighting nodes, immediately call highlight_edges() to highlight all edges connected to/from these nodes
+
+    Workflow:
+    1. Call read_graph() to see the current graph
+    2. Identify which nodes answer the question
+    3. Call highlight_nodes() with those node IDs, color, and the question
+    4. Identify all edges connecting those nodes
+    5. Call highlight_edges() with those edge IDs and the same color
 
     Args:
-        node_ids: List of node IDs to highlight
-        color: Color code as integer (0 = no highlight)
-        question: Optional question/description associated with this highlight
+        node_ids: List of node IDs to highlight (must exist in the graph)
+        color: Color code as integer (1-10, where 0 = no highlight)
+        question: The specific question this highlight answers (REQUIRED - one question per color)
 
     Returns:
         str: Status message indicating success and number of nodes highlighted
@@ -356,9 +370,20 @@ def highlight_edges(edge_ids: list[str], color: int) -> str:
     """
     Highlight specific edges in the graph.
 
+    IMPORTANT: This tool should be called IMMEDIATELY after highlight_nodes() to highlight
+    the edges connecting the highlighted nodes. Use the SAME color as used for the nodes.
+
+    This tool does NOT accept a question parameter - the question is already stored when
+    you call highlight_nodes(). Just provide the edge IDs and the same color number.
+
+    To find which edges to highlight:
+    1. Look at the node IDs you just highlighted
+    2. Find all edges where source OR target matches any of those node IDs
+    3. Pass those edge IDs to this function with the same color
+
     Args:
-        edge_ids: List of edge IDs to highlight
-        color: Color code as integer (0 = no highlight)
+        edge_ids: List of edge IDs to highlight (must exist in the graph)
+        color: Color code as integer (1-10, same as used in highlight_nodes())
 
     Returns:
         str: Status message indicating success and number of edges highlighted
@@ -388,8 +413,18 @@ def read_graph() -> str:
     """
     Read and return the current state of the code graph.
 
+    IMPORTANT: ALWAYS call this tool FIRST before using highlight_nodes() or highlight_edges()
+    to understand the current graph structure, existing nodes, edges, and their IDs.
+
+    This helps you:
+    - See what nodes and edges exist
+    - Understand the relationships in the graph
+    - Identify which node IDs to highlight
+    - Find which edge IDs connect highlighted nodes
+    - Check existing highlights and questions
+
     Returns:
-        str: JSON string representation of the graph
+        str: JSON string representation of the entire graph including nodes, edges, and highlightQuestions
     """
     graph = load_graph()
     return json.dumps(graph, indent=2)
