@@ -112,17 +112,36 @@ def init_graph(path: str) -> str:
 def add_nodes(node_list: list[dict[str, Any]]) -> str:
     """
     Add nodes to the code graph.
+    
+    Nodes represent code elements: classes, functions, or files. The agent creates nodes
+    for elements relevant to understanding the overall code structure. Nodes are identified
+    by a unique ID with the element's name.
 
     Args:
-        node_list: List of nodes to add. Each node should have:
-            - id (str): Unique identifier for the node (use full path for files to avoid clashes).
-            If this is a class or function use path::name where name is the name of the class/function.
-            - type (str): Node type - "class", "function", or "file"
-            - metadata (dict): Type-specific metadata:
-                - class: {"functions": [...], "attributes": [...], "children": [...]}
-                - function: {"parameters": [...], "returns": "...", "brief_summary": "...", "full_documentation": "..."}
-                - file: {"classes": [...], "functions": [...]}
-            - highlight (int, optional): Color code for highlighting (0 = no highlight)
+        node_list: List of nodes to add. Each node must have:
+            - id (str): Unique identifier for the node (e.g., "src/utils.py:MyClass" or "src/main.py:my_function")
+            - label (str): Display name for the node
+            - type (str): Node type - "file", "class", or "function"
+            - metadata (dict): Type-specific metadata containing field names (clickable to show content):
+                
+                For "file" nodes:
+                - classes (list[str]): Names of classes defined in the file
+                - functions (list[str]): Top-level functions in the file (not inner functions)
+                - brief_summary (str): Brief description of the file's purpose
+                
+                For "class" nodes:
+                - functions (list[str]): Method names defined in the class
+                - attributes (list[str]): Attribute/property names of the class
+                - children (list[str]): Names of child classes (if applicable)
+                - brief_summary (str): Brief description of the class
+                
+                For "function" nodes:
+                - parameters (list[str]): Parameter names and types
+                - returns (str): Description of return value(s)
+                - brief_summary (str): Brief description of what the function does
+                - full_documentation (str): Complete function documentation/docstring
+            
+            - highlight (int, optional): Color code for highlighting (0-10, where 0 = no highlight)
 
     Returns:
         str: Status message indicating success and number of nodes added/skipped
@@ -132,6 +151,10 @@ def add_nodes(node_list: list[dict[str, Any]]) -> str:
 
     added_count = 0
     skipped_count = 0
+    
+    # Valid source code file extensions
+    VALID_EXTENSIONS = {'.py', '.js', '.ts', '.java', '.cpp', '.c', '.h', '.hpp', 
+                       '.cs', '.rb', '.go', '.rs', '.php', '.swift', '.kt'}
 
     for node in node_list:
         # Validate required fields
@@ -142,14 +165,60 @@ def add_nodes(node_list: list[dict[str, Any]]) -> str:
         if node["id"] in existing_ids:
             skipped_count += 1
             continue
+        
+        # Validate node type
+        node_type = node.get("type", "").lower()
+        if node_type not in ["file", "class", "function"]:
+            skipped_count += 1
+            continue
+        
+        # For file nodes, validate that they are source code files
+        if node_type == "file":
+            file_path = node.get("id", "")
+            # Check if file has a valid source code extension
+            has_valid_ext = any(file_path.endswith(ext) for ext in VALID_EXTENSIONS)
+            if not has_valid_ext:
+                skipped_count += 1
+                continue
 
-        # Ensure highlight field exists
+        # Ensure label exists (use id as fallback)
+        if "label" not in node:
+            node["label"] = node["id"].split(":")[-1] if ":" in node["id"] else node["id"]
+
+        # Ensure highlight field exists and is valid
         if "highlight" not in node:
             node["highlight"] = 0
+        else:
+            node["highlight"] = max(0, min(10, int(node["highlight"])))
 
         # Ensure metadata exists
         if "metadata" not in node:
             node["metadata"] = {}
+        
+        # Validate metadata structure based on node type
+        metadata = node.get("metadata", {})
+        
+        if node_type == "file":
+            # File metadata should contain lists of classes and functions
+            if "classes" not in metadata:
+                metadata["classes"] = []
+            if "functions" not in metadata:
+                metadata["functions"] = []
+            # brief_summary is optional
+                
+        elif node_type == "class":
+            # Class metadata should contain method and attribute names
+            if "functions" not in metadata:
+                metadata["functions"] = []
+            if "attributes" not in metadata:
+                metadata["attributes"] = []
+            # children and brief_summary are optional
+                
+        elif node_type == "function":
+            # Function metadata should document parameters, return type, and documentation
+            if "parameters" not in metadata:
+                metadata["parameters"] = []
+            # returns, brief_summary, and full_documentation are optional
 
         graph["nodes"].append(node)
         existing_ids.add(node["id"])
@@ -157,20 +226,26 @@ def add_nodes(node_list: list[dict[str, Any]]) -> str:
 
     save_graph(graph)
 
-    return f"Added {added_count} node(s), skipped {skipped_count} existing node(s)."
+    return f"Added {added_count} node(s), skipped {skipped_count} existing/invalid node(s)."
 
 
 @mcp.tool()
 def add_edges(edge_list: list[dict[str, Any]]) -> str:
     """
-    Add edges to the code graph.
+    Add edges (relationships) to the code graph.
+    
+    Edges represent relationships between nodes and help visualize how code elements
+    interact. The agent creates edges when necessary to understand code flow and dependencies.
 
     Args:
-        edge_list: List of edges to add. Each edge should have:
+        edge_list: List of edges to add. Each edge must have:
             - source (str): ID of the source node
             - target (str): ID of the target node
-            - type (str): Edge type - "inherit", "invokes", or "contains"
-            - highlight (int, optional): Color code for highlighting (0 = no highlight)
+            - type (str): Edge type indicating the relationship:
+                - "inherit": Class inheritance (source class inherits from target class)
+                - "invokes": Function invocation (source function calls target function)
+                - "contains": Containment relationship (source file/class contains target element)
+            - highlight (int, optional): Color code for highlighting (0-10, where 0 = no highlight)
 
     Returns:
         str: Status message indicating success and number of edges added/skipped
@@ -186,31 +261,45 @@ def add_edges(edge_list: list[dict[str, Any]]) -> str:
 
     added_count = 0
     skipped_count = 0
+    
+    # Valid edge types
+    VALID_EDGE_TYPES = {"inherit", "invokes", "contains"}
 
     for edge in edge_list:
         # Validate required fields
         if "source" not in edge or "target" not in edge or "type" not in edge:
             continue
+        
+        # Validate edge type
+        edge_type = edge.get("type", "").lower()
+        if edge_type not in VALID_EDGE_TYPES:
+            skipped_count += 1
+            continue
 
         # Create edge signature
-        edge_sig = (edge["source"], edge["target"], edge["type"])
+        edge_sig = (edge["source"], edge["target"], edge_type)
 
         # Skip if edge already exists
         if edge_sig in existing_edges:
             skipped_count += 1
             continue
 
-        # Optionally validate that source and target nodes exist
+        # Validate that source and target nodes exist
         if edge["source"] not in node_ids or edge["target"] not in node_ids:
             skipped_count += 1
             continue
 
         # Generate edge ID
         edge["id"] = get_next_edge_id(graph)
+        
+        # Normalize edge type
+        edge["type"] = edge_type
 
-        # Ensure highlight field exists
+        # Ensure highlight field exists and is valid
         if "highlight" not in edge:
             edge["highlight"] = 0
+        else:
+            edge["highlight"] = max(0, min(10, int(edge["highlight"])))
 
         graph["edges"].append(edge)
         existing_edges.add(edge_sig)
