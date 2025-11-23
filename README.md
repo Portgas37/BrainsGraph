@@ -1,6 +1,10 @@
-# Code Graph MCP Server
+# GraphBrains: Interactive QA code visualization
 
-An MCP server for managing code graph structures that can be visualized with d3.js.
+![GraphBrains Demo](demo.png)
+
+## Code Graph MCP Server
+
+An MCP server for managing code graph structures that can be visualized with d3.js. Highlight code elements to answer questions visually in an interactive graph.
 
 ## Features
 
@@ -143,17 +147,15 @@ python server.py
 
 
 
+## Adding the server to CLAUDE
 ```
 {
   "mcpServers": {
     "code-graph": {
-      "command": "/Users/youssefboughizane/Documents/projects/lauzhack/mcp_experiment/graph_mcp_server/venv/bin/python",
+      "command": "<path_to_this_repo>/venv/bin/python",
       "args": [
-        "/Users/youssefboughizane/Documents/projects/lauzhack/mcp_experiment/graph_mcp_server/server.py"
-      ],
-      "env": {
-        "GRAPH_FILE_PATH": "/Users/youssefboughizane/Documents/projects/lauzhack/mcp_experiment/graph_mcp_server/code_graph.json"
-      }
+        "<path_to_this_repo>/MCP/server.py"
+      ]
     }
   }
 }
