@@ -449,6 +449,9 @@
         return highlightColors[group] ? highlightColors[group].stroke : '#ff6b6b';
     }
 
+    // Track which groups are currently visible
+    let visibleGroups = new Set();
+
     function updateQuestionsDisplay(highlightQuestions) {
         console.log('updateQuestionsDisplay called with:', highlightQuestions);
         const questionsDiv = document.getElementById('questions');
@@ -458,21 +461,107 @@
             return;
         }
 
+        // Initialize all groups as visible
+        Object.keys(highlightQuestions).forEach(group => visibleGroups.add(group));
+
         let html = '<div style="font-size: 14px; font-weight: 600; margin-bottom: 15px; color: #333;">Highlighted Questions:</div>';
 
         Object.entries(highlightQuestions).forEach(([group, question]) => {
             console.log(`Processing question for group ${group}: ${question}`);
             const color = highlightColors[group];
             if (color) {
-                html += `<div style="display: flex; align-items: start; gap: 10px; margin-bottom: 12px;">
-                        <div style="width: 20px; height: 20px; min-width: 20px; background: ${color.fill}; border: 2.5px solid ${color.stroke}; border-radius: 5px; box-shadow: 0 0 10px ${color.stroke}70;"></div>
+                const isChecked = visibleGroups.has(group);
+                html += `<label style="display: flex; align-items: start; gap: 10px; margin-bottom: 12px; cursor: pointer; user-select: none;">
+                        <div style="position: relative; width: 20px; height: 20px; min-width: 20px;">
+                            <input type="checkbox"
+                                   data-group="${group}"
+                                   ${isChecked ? 'checked' : ''}
+                                   onchange="toggleHighlightGroup(${group})"
+                                   style="appearance: none; width: 20px; height: 20px; background: ${isChecked ? color.fill : '#f0f0f0'}; border: 2.5px solid ${color.stroke}; border-radius: 5px; box-shadow: 0 0 10px ${color.stroke}70; cursor: pointer; transition: all 0.2s ease; display: block;">
+                            ${isChecked ? `<svg style="position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; pointer-events: none;" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M13 4L6 11L3 8" stroke="${color.stroke}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>` : ''}
+                        </div>
                         <div style="font-size: 13px; color: #333; line-height: 1.6; flex: 1; padding-top: 1px;">${question}</div>
-                    </div>`;
+                    </label>`;
             }
         });
 
         console.log('Final HTML:', html);
         questionsDiv.innerHTML = html;
+    }
+
+    function toggleHighlightGroup(group) {
+        if (visibleGroups.has(String(group))) {
+            visibleGroups.delete(String(group));
+        } else {
+            visibleGroups.add(String(group));
+        }
+
+        // Update the visualization
+        updateNodeAndEdgeVisibility();
+    }
+
+    function updateNodeAndEdgeVisibility() {
+        // Update nodes
+        d3.selectAll('.node').each(function(d) {
+            const node = d3.select(this);
+            if (d.highlighted && !visibleGroups.has(String(d.highlightGroup))) {
+                // Hide highlight - revert to default style
+                node.classed('highlighted', false);
+                node.classed(`highlight-${d.highlightGroup}`, false);
+            } else if (d.highlighted && visibleGroups.has(String(d.highlightGroup))) {
+                // Show highlight
+                node.classed('highlighted', true);
+                node.classed(`highlight-${d.highlightGroup}`, true);
+            }
+        });
+
+        // Update edges
+        d3.selectAll('.link').each(function(d) {
+            const link = d3.select(this);
+            if (d.highlighted && !visibleGroups.has(String(d.highlightGroup))) {
+                // Hide highlight
+                link.classed('highlighted', false);
+                link.classed(`highlight-${d.highlightGroup}`, false);
+            } else if (d.highlighted && visibleGroups.has(String(d.highlightGroup))) {
+                // Show highlight
+                link.classed('highlighted', true);
+                link.classed(`highlight-${d.highlightGroup}`, true);
+            }
+        });
+
+        // Update checkbox appearance and checkmark
+        d3.selectAll('input[type="checkbox"]').each(function() {
+            const checkbox = d3.select(this);
+            const group = checkbox.attr('data-group');
+            const color = highlightColors[group];
+            const isChecked = visibleGroups.has(group);
+
+            checkbox.style('background', isChecked ? color.fill : '#f0f0f0');
+
+            // Update checkmark
+            const parent = this.parentElement;
+            const existingSvg = parent.querySelector('svg');
+            if (isChecked && !existingSvg) {
+                // Add checkmark
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('style', 'position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; pointer-events: none;');
+                svg.setAttribute('viewBox', '0 0 16 16');
+                svg.setAttribute('fill', 'none');
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', 'M13 4L6 11L3 8');
+                path.setAttribute('stroke', color.stroke);
+                path.setAttribute('stroke-width', '2.5');
+                path.setAttribute('stroke-linecap', 'round');
+                path.setAttribute('stroke-linejoin', 'round');
+                svg.appendChild(path);
+                parent.appendChild(svg);
+            } else if (!isChecked && existingSvg) {
+                // Remove checkmark
+                existingSvg.remove();
+            }
+        });
     }
 
     function initGraph() {

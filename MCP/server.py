@@ -333,11 +333,7 @@ def highlight_nodes(node_ids: list[str], color: int, question: str = "") -> str:
     if "highlightQuestions" not in graph:
         graph["highlightQuestions"] = {}
 
-    # First, reset all highlights
-    for node in graph["nodes"]:
-        node["highlight"] = 0
-
-    # Then apply new highlights
+    # Don't reset all highlights - only update the specified nodes
     highlighted_count = 0
     node_id_set = set(node_ids)
 
@@ -346,7 +342,7 @@ def highlight_nodes(node_ids: list[str], color: int, question: str = "") -> str:
             node["highlight"] = color
             highlighted_count += 1
 
-    # Store the question for this color
+    # Store the question for this color (always update if provided)
     if question:
         graph["highlightQuestions"][str(color)] = question
 
@@ -356,29 +352,20 @@ def highlight_nodes(node_ids: list[str], color: int, question: str = "") -> str:
 
 
 @mcp.tool()
-def highlight_edges(edge_ids: list[str], color: int, question: str = "") -> str:
+def highlight_edges(edge_ids: list[str], color: int) -> str:
     """
     Highlight specific edges in the graph.
 
     Args:
         edge_ids: List of edge IDs to highlight
         color: Color code as integer (0 = no highlight)
-        question: Optional question/description associated with this highlight
 
     Returns:
         str: Status message indicating success and number of edges highlighted
     """
     graph = load_graph()
 
-    # Initialize highlightQuestions if not present
-    if "highlightQuestions" not in graph:
-        graph["highlightQuestions"] = {}
-
-    # First, reset all highlights
-    for edge in graph["edges"]:
-        edge["highlight"] = 0
-
-    # Then apply new highlights
+    # Don't reset all highlights - only update the specified edges
     highlighted_count = 0
     edge_id_set = set(edge_ids)
 
@@ -386,10 +373,6 @@ def highlight_edges(edge_ids: list[str], color: int, question: str = "") -> str:
         if edge["id"] in edge_id_set:
             edge["highlight"] = color
             highlighted_count += 1
-
-    # Store the question for this color
-    if question:
-        graph["highlightQuestions"][str(color)] = question
 
     save_graph(graph)
 
