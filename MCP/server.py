@@ -6,8 +6,9 @@ Provides tools to create and manage nodes and edges representing code structure.
 
 import json
 import os
+import shutil
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from fastmcp import FastMCP
 
@@ -53,6 +54,58 @@ def get_next_edge_id(graph: dict[str, Any]) -> str:
                 continue
 
     return f"edge_{max_id + 1}"
+
+
+@mcp.tool()
+def init_graph(path: str) -> str:
+    """
+    Initialize a new code graph at the specified path.
+    Creates a .brainsGraph directory with code_graph.json and graph-viewer.html.
+
+    Args:
+        path: Root directory path of the codebase where .brainsGraph folder should be created
+
+    Returns:
+        str: Status message indicating success and the path where graph was initialized
+    """
+    global GRAPH_FILE_PATH
+
+    # Convert to absolute path
+    abs_root = os.path.abspath(path)
+
+    # Create .brainsGraph directory
+    brains_graph_dir = os.path.join(abs_root, ".brainsGraph")
+    os.makedirs(brains_graph_dir, exist_ok=True)
+
+    # Define graph file path
+    graph_file = os.path.join(brains_graph_dir, "code_graph.json")
+
+    # Initialize empty graph
+    graph = {
+        "nodes": [],
+        "edges": []
+    }
+
+    # Update the global graph file path
+    GRAPH_FILE_PATH = graph_file
+
+    # Save the initial graph
+    with open(graph_file, "w") as f:
+        json.dump(graph, f, indent=2)
+
+    # Copy the graph viewer HTML file
+    viewer_source = Path(__file__).parent.parent / "D3JS-UI" / "graph-viewer.html"
+    viewer_dest = os.path.join(brains_graph_dir, "graph-viewer.html")
+
+    try:
+        shutil.copy2(viewer_source, viewer_dest)
+        viewer_msg = f"\nViewer copied to: {viewer_dest}"
+    except FileNotFoundError:
+        viewer_msg = f"\nWarning: Could not find viewer at {viewer_source}"
+    except Exception as e:
+        viewer_msg = f"\nWarning: Could not copy viewer: {str(e)}"
+
+    return f"Successfully initialized graph at: {graph_file}\nCodebase root: {abs_root}{viewer_msg}"
 
 
 @mcp.tool()
