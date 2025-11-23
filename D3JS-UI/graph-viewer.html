@@ -332,6 +332,9 @@
 <div id="info">
     <div>Drop a .json file to visualize</div>
     <div id="stats"></div>
+    <div id="questions" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(0,0,0,0.1);">
+        <!-- Questions will be populated here -->
+    </div>
 </div>
 
 <div id="legend">
@@ -339,16 +342,6 @@
         Legend
     </h3>
     <div style="margin-bottom: 12px;">
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-            <div style="width: 20px; height: 20px; background: #ffd93d; border: 3px solid #ff6b6b; border-radius: 50%; box-shadow: 0 0 8px rgba(255,107,107,0.6);"></div>
-            <div style="font-size: 13px; color: #444; font-weight: 500;">Highlighted Node</div>
-        </div>
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 40px; height: 4px; background: #ff6b6b; box-shadow: 0 0 6px rgba(255,107,107,0.8);"></div>
-            <div style="font-size: 13px; color: #444; font-weight: 500;">Highlighted Path</div>
-        </div>
-    </div>
-    <div style="margin-bottom: 12px; padding-top: 12px; border-top: 2px solid #ddd;">
         <div style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">Edge Types:</div>
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
             <div style="width: 40px; height: 3px; background: #666;"></div>
@@ -366,9 +359,6 @@
             <div style="width: 40px; height: 3px; background: #666;"></div>
             <div style="font-size: 12px; color: #444;">Inherits</div>
         </div>
-    </div>
-    <div id="colorGroupsLegend" style="margin-top: 12px;">
-        <!-- Dynamically populated based on active groups -->
     </div>
 </div>
 
@@ -398,28 +388,30 @@
         return highlightColors[group] ? highlightColors[group].stroke : '#ff6b6b';
     }
 
-    function updateColorGroupsLegend(activeGroups) {
-        const legendDiv = document.getElementById('colorGroupsLegend');
-        if (activeGroups.size === 0) {
-            legendDiv.innerHTML = '';
+    function updateQuestionsDisplay(highlightQuestions) {
+        console.log('updateQuestionsDisplay called with:', highlightQuestions);
+        const questionsDiv = document.getElementById('questions');
+        if (!highlightQuestions || Object.keys(highlightQuestions).length === 0) {
+            console.log('No questions to display');
+            questionsDiv.innerHTML = '';
             return;
         }
 
-        let html = '<div style="font-size: 13px; font-weight: 600; margin-bottom: 8px; padding-top: 12px; border-top: 2px solid #ddd;">Color Groups:</div>';
-        html += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 12px;">';
+        let html = '<div style="font-size: 14px; font-weight: 600; margin-bottom: 15px; color: #333;">Highlighted Questions:</div>';
 
-        Array.from(activeGroups.keys()).sort((a, b) => a - b).forEach(group => {
+        Object.entries(highlightQuestions).forEach(([group, question]) => {
+            console.log(`Processing question for group ${group}: ${question}`);
             const color = highlightColors[group];
             if (color) {
-                html += `<div style="display: flex; align-items: center; gap: 6px;">
-                        <div style="width: 14px; height: 14px; background: ${color.stroke}; border-radius: 50%;"></div>
-                        <span style="font-weight: 500;">Group ${group}</span>
+                html += `<div style="display: flex; align-items: start; gap: 10px; margin-bottom: 12px;">
+                        <div style="width: 20px; height: 20px; min-width: 20px; background: ${color.fill}; border: 2.5px solid ${color.stroke}; border-radius: 5px; box-shadow: 0 0 10px ${color.stroke}70;"></div>
+                        <div style="font-size: 13px; color: #333; line-height: 1.6; flex: 1; padding-top: 1px;">${question}</div>
                     </div>`;
             }
         });
 
-        html += '</div>';
-        legendDiv.innerHTML = html;
+        console.log('Final HTML:', html);
+        questionsDiv.innerHTML = html;
     }
 
     function initGraph() {
@@ -515,20 +507,10 @@
 
         console.log(`Total highlighted nodes: ${highlightedNodes}, edges: ${highlightedEdges}`);
 
-        // Update the legend with only active groups
-        updateColorGroupsLegend(highlightGroups);
+        // Update the questions display
+        updateQuestionsDisplay(data.highlightQuestions || {});
 
         let statsHTML = `Nodes: ${nodes.length} | Edges: ${links.length}`;
-        if (highlightedNodes > 0) {
-            statsHTML += ` <span class="highlight-badge">${highlightedNodes} highlighted</span>`;
-            // Show groups
-            highlightGroups.forEach((count, group) => {
-                statsHTML += ` <span class="highlight-badge" style="background: ${getHighlightColor(group)}">Group ${group}: ${count}</span>`;
-            });
-        }
-        if (highlightedEdges > 0) {
-            statsHTML += ` <span class="highlight-badge">${highlightedEdges} paths</span>`;
-        }
         document.getElementById('stats').innerHTML = statsHTML;
 
         const width = window.innerWidth;
@@ -922,7 +904,8 @@
         const d3Data = {
             graphType: data.graphType || "classDiagram",
             nodes: [],
-            edges: []
+            edges: [],
+            highlightQuestions: data.highlightQuestions || {}
         };
 
         // Convert nodes

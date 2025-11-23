@@ -24,12 +24,16 @@ def load_graph() -> dict[str, Any]:
     """Load the graph from JSON file, create if doesn't exist."""
     if not os.path.exists(GRAPH_FILE_PATH):
         # Create empty graph
-        graph = {"nodes": [], "edges": []}
+        graph = {"nodes": [], "edges": [], "highlightQuestions": {}}
         save_graph(graph)
         return graph
 
     with open(GRAPH_FILE_PATH, "r") as f:
-        return json.load(f)
+        graph = json.load(f)
+        # Ensure highlightQuestions exists
+        if "highlightQuestions" not in graph:
+            graph["highlightQuestions"] = {}
+        return graph
 
 
 def save_graph(graph: dict[str, Any]) -> None:
@@ -222,18 +226,23 @@ def add_edges(edge_list: list[dict[str, Any]]) -> str:
 
 
 @mcp.tool()
-def highlight_nodes(node_ids: list[str], color: int) -> str:
+def highlight_nodes(node_ids: list[str], color: int, question: str = "") -> str:
     """
     Highlight specific nodes in the graph.
 
     Args:
         node_ids: List of node IDs to highlight
         color: Color code as integer (0 = no highlight)
+        question: Optional question/description associated with this highlight
 
     Returns:
         str: Status message indicating success and number of nodes highlighted
     """
     graph = load_graph()
+
+    # Initialize highlightQuestions if not present
+    if "highlightQuestions" not in graph:
+        graph["highlightQuestions"] = {}
 
     # First, reset all highlights
     for node in graph["nodes"]:
@@ -248,24 +257,33 @@ def highlight_nodes(node_ids: list[str], color: int) -> str:
             node["highlight"] = color
             highlighted_count += 1
 
+    # Store the question for this color
+    if question:
+        graph["highlightQuestions"][str(color)] = question
+
     save_graph(graph)
 
     return f"Highlighted {highlighted_count} node(s) with color {color}."
 
 
 @mcp.tool()
-def highlight_edges(edge_ids: list[str], color: int) -> str:
+def highlight_edges(edge_ids: list[str], color: int, question: str = "") -> str:
     """
     Highlight specific edges in the graph.
 
     Args:
         edge_ids: List of edge IDs to highlight
         color: Color code as integer (0 = no highlight)
+        question: Optional question/description associated with this highlight
 
     Returns:
         str: Status message indicating success and number of edges highlighted
     """
     graph = load_graph()
+
+    # Initialize highlightQuestions if not present
+    if "highlightQuestions" not in graph:
+        graph["highlightQuestions"] = {}
 
     # First, reset all highlights
     for edge in graph["edges"]:
@@ -279,6 +297,10 @@ def highlight_edges(edge_ids: list[str], color: int) -> str:
         if edge["id"] in edge_id_set:
             edge["highlight"] = color
             highlighted_count += 1
+
+    # Store the question for this color
+    if question:
+        graph["highlightQuestions"][str(color)] = question
 
     save_graph(graph)
 
