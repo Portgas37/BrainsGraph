@@ -1,4 +1,4 @@
-# GraphBrains: Interactive QA code visualization
+# BrainsGraph: Interactive QA code visualization
 
 <img src="demo.png" alt="GraphBrains Demo" width="70%">
 
